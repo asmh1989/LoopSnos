@@ -6,7 +6,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 6.3 REQUIRED COMPONENTS Gui Charts Qml Quick Core QuickControls2 WebSockets SerialPort)
+find_package(Qt6 6.3 REQUIRED COMPONENTS  Charts Quick QuickControls2 WebSockets SerialPort)
 
 add_subdirectory(Qt-AES)
 
@@ -51,11 +51,11 @@ set_target_properties(appLoopSnos PROPERTIES
 target_link_libraries(appLoopSnos
     PUBLIC Qt6::QuickControls2
     Qt6::Quick
-    Qt6::Core
+#    Qt6::Core
     Qt6::WebSockets
     Qt6::Charts
-    Qt::Gui
-    Qt::Qml
+#    Qt::Gui
+#    Qt::Qml
     Qt6::SerialPort
     QtAES
 )
