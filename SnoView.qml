@@ -9,6 +9,7 @@ Rectangle {
     property alias url: manager.url
     property alias type: manager.type
     property alias interval: manager.interval
+    property int sensorIndex: 0
     property real umd1_x: 0
     property int umd1_min_y: 0
     property int umd1_max_y: 0
@@ -46,12 +47,7 @@ Rectangle {
 
     function refreshStatus() {
         let obj = manager.sampleData
-        let sensor_name = ""
-        sensorsModel.forEach(function (e) {
-            if ((manager.url + "").includes(e.addr)) {
-                sensor_name = e.detector_name
-            }
-        })
+        let sensor_name = sensorsModel[sensorIndex].detector_name
         let d = sensor_name
         if (obj) {
             var trace_umd1_temp = obj[Common.TRACE_UMD1_TEMP] / 100.0
@@ -62,8 +58,9 @@ Rectangle {
             d = "TD:" + trace_umd1_temp + "°C, TA:" + ambient_temp + "°C, RH:"
                     + ambient_humi + "% " + sensor_name
 
-            if (Common.is_helxa_finish(func_status) && resultPbb.length > 0) {
-                d = d + " 测试成功： " + resultPbb + " pbb"
+            if (func_status === Common.STATUS_END_FINISH
+                    && resultPbb.length > 0) {
+                d = d + " 测试成功：" + resultPbb + " pbb"
             }
         }
 
@@ -317,7 +314,7 @@ Rectangle {
             anchors.centerIn: parent
             width: parent.width * 0.9
             padding: 6
-            horizontalAlignment: Qt.AlignLeft
+            horizontalAlignment: Qt.AlignHCenter
             verticalAlignment: Qt.AlignVCenter
             background: Rectangle {
                 anchors.fill: parent
@@ -333,10 +330,6 @@ Rectangle {
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.top: parent.top
         }
-    }
-
-    Component.onCompleted: {
-
     }
 
     EmSocketManager {
@@ -459,12 +452,21 @@ Rectangle {
         }
     }
 
+    Component.onCompleted: {
+        refreshStatus()
+    }
+
     Connections {
         target: eventBus
 
         function onMessageReceived(msg) {
             if (msg === Common.MESSAGE_REFRESH_CONFIG) {
                 refreshStatus()
+                var new_url = Common.fix_url(sensorsModel[sensorIndex].addr)
+                if (new_url !== url) {
+                    manager.close()
+                    url = new_url
+                }
             }
         }
     }

@@ -193,6 +193,10 @@ Item {
         socket.open()
     }
 
+    function close() {
+        socket.close()
+    }
+
     Component.onCompleted: {
 
         //        socket.open()

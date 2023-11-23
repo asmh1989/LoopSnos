@@ -186,5 +186,9 @@ ApplicationWindow {
         property real standard_arg2: 0.0009
         property real standard_arg3: -0.0126
         property real standard_arg4: 1
+        // 阀门序号
+        property int val_index: 1
+        property real indoor_umd: 25
+        property int indoor_humi: 48
     }
 }

@@ -333,3 +333,11 @@ function umd_avg(state1, state2, state3, state4, arr_umd1) {
     var r = Math.abs(av1 - av2).toFixed(2)
     return r
 }
+
+function fix_url(url) {
+    var addr = url
+    if (!addr.startsWith("ws://")) {
+        addr = "ws://" + addr
+    }
+    return addr
+}

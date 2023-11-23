@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import "common.js" as Common
 
 Page {
     readonly property int space: 6
@@ -31,6 +32,7 @@ Page {
                 delegate: SnoView {
                     width: grid.cellWidth - 4
                     height: grid.cellHeight - 4
+                    sensorIndex: index
                     id: sno
                     url: urls[index]
                     border {
@@ -43,6 +45,7 @@ Page {
                         target: bus
 
                         function onMessageReceived(message, content) {
+                            save_cache()
                             if (message === "Sno") {
                                 sno.startSno()
                             } else if (message === "ForceStop") {
@@ -127,8 +130,9 @@ Page {
                     }
 
                     TextField {
-                        id: fm
+                        id: tf_fm
                         placeholderText: "请输入"
+                        text: appSettings.val_index + ""
                         Layout.maximumHeight: 40
                         validator: IntValidator {
                             bottom: 1
@@ -150,8 +154,10 @@ Page {
                     }
 
                     TextField {
+                        id: tf_umd
                         placeholderText: "请输入"
                         Layout.maximumHeight: 40
+                        text: appSettings.indoor_umd + ""
 
                         validator: DoubleValidator {
                             bottom: 5
@@ -174,8 +180,10 @@ Page {
                     }
 
                     TextField {
+                        id: tf_humi
                         placeholderText: "请输入"
                         Layout.maximumHeight: 40
+                        text: appSettings.indoor_humi + ""
 
                         validator: IntValidator {
                             bottom: 1
@@ -323,17 +331,16 @@ Page {
     function save_cache() {
         appSettings.offline_times = parseInt(t_times.text)
         appSettings.offline_interval = parseInt(t_interval.text)
+
+        appSettings.val_index = parseInt(tf_fm.text)
+        appSettings.indoor_humi = parseInt(tf_humi.text)
+        appSettings.indoor_umd = parseFloat(tf_umd.text)
     }
 
     Component.onCompleted: {
 
         sensorsModel.forEach(function (element) {
-            var addr = element.addr
-            if (!addr.startsWith("ws://")) {
-                addr = "ws://" + addr
-            }
-
-            urls.push(addr)
+            urls.push(Common.fix_url(element.addr))
         })
         grid.model = urls
     }
