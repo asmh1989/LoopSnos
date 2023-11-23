@@ -6,7 +6,6 @@ import "./view"
 import "common.js" as Common
 
 Page {
-
     header: ToolBar {
         id: bar
         width: parent.width
@@ -98,9 +97,6 @@ Page {
                         boundsMovement: Flickable.StopAtBounds
                         clip: true
 
-                        //            ScrollBar.vertical: ScrollBar {
-                        //                active: true
-                        //            }
                         model: airBagsModel
                         delegate: Column {
                             height: header.parent.height
@@ -121,24 +117,24 @@ Page {
                                 MyInput {
                                     id: s_1
                                     width: h_1.width
-                                    myInput: (index + 1) + ""
+                                    text: (index + 1) + ""
                                     enabled: false
                                 }
                                 MyInput {
                                     id: s_2
                                     width: h_2.width
-                                    myInput: modelData.airbag_no
+                                    text: modelData.airbag_no
 
-                                    onMyInputChanged: {
-                                        airBagsModel[index].airbag_no = myInput
+                                    onEditingFinished: {
+                                        airBagsModel[index].airbag_no = text
                                     }
                                 }
                                 MyInput {
                                     id: s_3
                                     width: h_3.width
-                                    myInput: modelData.gas_conc
-                                    onMyInputChanged: {
-                                        airBagsModel[index].gas_conc = myInput
+                                    text: modelData.gas_conc
+                                    onEditingFinished: {
+                                        airBagsModel[index].gas_conc = text
                                     }
                                 }
                             }

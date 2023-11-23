@@ -59,8 +59,10 @@ ApplicationWindow {
     function saveJsonFile(source, data) {
         file.source = source
         file.write(JSON.stringify(data))
+        console.log("save = " + JSON.stringify(data))
         showToast("保存成功： " + source)
         eventBus.sendMessage(Common.MESSAGE_REFRESH_CONFIG)
+        pop()
     }
 
     Flickable {
@@ -76,29 +78,6 @@ ApplicationWindow {
             anchors.fill: parent
             initialItem: HomePage {}
         }
-
-        //        Keys.onPressed: function (event) {
-        //            if (event.key === Qt.Key_Tab) {
-        //                event.accepted = false // 禁用默认的Tab键行为
-
-        //                // 获取当前具有焦点的TextField
-        //                var currentTextField = Qt.inputMethod.focusObject
-
-        //                // 获取所有的TextField
-        //                var textFields = parent.children.filter(function (child) {
-        //                    return child instanceof TextInput
-        //                })
-
-        //                // 获取当前TextField在数组中的索引
-        //                var currentIndex = textFields.indexOf(currentTextField)
-
-        //                // 计算下一个TextField的索引
-        //                var nextIndex = (currentIndex + 1) % textFields.length
-
-        //                // 将焦点设置为下一个TextField
-        //                textFields[nextIndex].forceActiveFocus()
-        //            }
-        //        }
     }
     function pop() {
         stackView.pop()
@@ -112,7 +91,7 @@ ApplicationWindow {
     }
 
     function showToast(msg) {
-        toast.show(msg, 3000)
+        toast.show(msg, 1500)
     }
 
     function setTimeout(func, interval, ...params) {
@@ -132,14 +111,16 @@ ApplicationWindow {
         airBagsModel = loadJsonFile(Common.AIRBAG_CONFIG_PATH)
         if (airBagsModel.length == 0) {
             [1, 2, 3, 4, 5, 6, 7, 8].forEach(function (e) {
-                airBagsModel.push(Common.JSON_SENSOR)
+                airBagsModel.push(JSON.parse(JSON.stringify(
+                                                 Common.JSON_AIRBAG)))
             })
         }
 
         sensorsModel = loadJsonFile(Common.SENSORS_CONFIG_PATH)
         if (sensorsModel.length == 0) {
             [1, 2, 3, 4].forEach(function (e) {
-                airBagsModel.push(Common.JSON_AIRBAG)
+                sensorsModel.push(JSON.parse(JSON.stringify(
+                                                 Common.JSON_SENSOR)))
             })
         }
     }
@@ -167,6 +148,7 @@ ApplicationWindow {
     Settings {
         id: appSettings
         fileName: "./config.txt"
+        property int job_id: 1
         property int umd_state1: 200
         property int umd_state2: 250
         property int umd_state3: 650

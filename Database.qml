@@ -13,165 +13,38 @@ QtObject {
             return _db
 
         try {
-            let db = LocalStorage.openDatabaseSync(
-                    "ToDoList", "1.0", "ToDoList application database")
+            let db = LocalStorage.openDatabaseSync("TestData", "1.0",
+                                                   "SnoLoopTestData")
 
             db.transaction(function (tx) {
-                tx.executeSql(`CREATE TABLE IF NOT EXISTS projects (
-                              project_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                              project_name TEXT NOT NULL CHECK(project_name != ''),
-                              project_note TEXT
-                              )`)
+                tx.executeSql(
+                            'CREATE TABLE IF NOT EXISTS test_data (id INTEGER PRIMARY KEY AUTOINCREMENT, ti REAL NOT NULL, rhi INT NOT NULL, td REAL NOT NULL, ta REAL NOT NULL, rha INT NOT NULL, mode TEXT NOT NULL, job_id TEXT NOT NULL, instrument_name TEXT NOT NULL, airLine_name TEXT NOT NULL, detector_name TEXT NOT NULL, airbag_no TEXT NOT NULL, gas_conc INT NOT NULL, result REAL NOT NULL, flow_rt TEXT, pressure_rt TEXT, no_rt TEXT, detector_no TEXT NOT NULL, sensor_no TEXT NOT NULL, create_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP)')
             })
-
-            db.transaction(function (tx) {
-                tx.executeSql(`CREATE TABLE IF NOT EXISTS tasks (
-                              task_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                              task_name TEXT CHECK(task_name != ''),
-                              done INTEGER,
-                              project_id,
-                              FOREIGN KEY(project_id) REFERENCES projects(project_id)
-                              )`)
-            })
-
             _db = db
         } catch (error) {
             console.log("Error opening database: " + error)
         }
-        ;
 
         return _db
     }
 
-    function getProjects() {
-        let projects = []
-        root._database().transaction(function (tx) {
-            let results = tx.executeSql('SELECT * FROM projects')
-            for (var i = 0; i < results.rows.length; i++) {
-                let projectRow = results.rows.item(i)
-                let projectId = projectRow.project_id
-                let completedTasks = Math.max(countDoneTasksByProject(
-                                                  projectId).rows.length, 0)
-                let totalTasks = Math.max(countTaskByProject(
-                                              projectId).rows.length, 0)
-                projects.push({
-                                  "projectName": projectRow.project_name,
-                                  "projectId": projectId,
-                                  "projectNote": projectRow.project_note ?? "",
-                                  "completedTasks": completedTasks,
-                                  "totalTasks": totalTasks
-                              })
-            }
-        })
-        return projects
-    }
-
-    function newProject(projectName) {
-        let results
-        root._database().transaction(function (tx) {
-            results = tx.executeSql(
-                        "INSERT INTO projects (project_name) VALUES(?)",
-                        [projectName])
-        })
-        return results
-    }
-
-    function updateProjectNote(projectId, projectNote) {
+    function insertTestData(ti, rhi, td, ta, rha, mode, id, instrument_name, airLine_name, detector_name, airbag_no, gas_conc, result, flow_rt, pressure_rt, no_rt, detector_no, sensor_no) {
         root._database().transaction(function (tx) {
             tx.executeSql(
-                        "UPDATE projects set project_note=? WHERE project_id=?",
-                        [projectNote, projectId])
+                        'INSERT INTO test_data (ti, rhi, td, ta, rha, mode, job_id, instrument_name, airLine_name, detector_name, airbag_no, gas_conc, result, flow_rt, pressure_rt, no_rt, detector_no, sensor_no) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                        [ti, rhi, td, ta, rha, mode, id, instrument_name, airLine_name, detector_name, airbag_no, gas_conc, result, flow_rt, pressure_rt, no_rt, detector_no, sensor_no])
         })
     }
 
-    function updateProjectName(projectId, projectName) {
+    function queryTestData() {
+        var result = []
         root._database().transaction(function (tx) {
-            tx.executeSql(
-                        "UPDATE projects set project_name=? WHERE project_id=?",
-                        [projectName, projectId])
-        })
-    }
-
-    function deleteProject(projectId) {
-        root._database().transaction(function (tx) {
-            deleteAllTasks(projectId)
-            tx.executeSql("DELETE FROM projects WHERE project_id = ?",
-                          [projectId])
-        })
-    }
-
-    function getTaskByProject(projectId) {
-        if (!projectId)
-            return
-
-        let tasks = []
-        root._database().transaction(function (tx) {
-            let results = tx.executeSql(
-                    "SELECT * FROM tasks WHERE project_id = " + [projectId] + " ORDER BY done")
-            for (var i = 0; i < results.rows.length; i++) {
-                let row = results.rows.item(i)
-                tasks.push({
-                               "taskId": row.task_id,
-                               "taskName": row.task_name,
-                               "done": row.done === 1 ? true : false
-                           })
+            var query = tx.executeSql('SELECT * FROM test_data')
+            for (var i = 0; i < query.rows.length; ++i) {
+                var row = query.rows.item(i)
+                result.push(row)
             }
         })
-        return tasks
-    }
-
-    function countTaskByProject(projectId) {
-        let results
-        root._database().transaction(function (tx) {
-            results = tx.executeSql(
-                        'SELECT task_id FROM tasks WHERE project_id =' + [projectId])
-        })
-        return results
-    }
-
-    function countDoneTasksByProject(projectId) {
-        let results
-        root._database().transaction(function (tx) {
-            results = tx.executeSql(
-                        "SELECT task_id FROM tasks WHERE project_id ="
-                        + [projectId] + " AND done = 1")
-        })
-        return results
-    }
-
-    function newTask(projectId, taskName) {
-        let results
-        root._database().transaction(function (tx) {
-            results = tx.executeSql(
-                        "INSERT INTO tasks (task_name, done, project_id) VALUES(?, 0, ?)",
-                        [taskName, projectId])
-        })
-        return results
-    }
-
-    function updateTaskName(taskId, taskName) {
-        root._database().transaction(function (tx) {
-            tx.executeSql("UPDATE tasks set task_name=? WHERE task_id=?",
-                          [taskName, taskId])
-        })
-    }
-
-    function updateDoneState(taskId, doneState) {
-        root._database().transaction(function (tx) {
-            tx.executeSql("UPDATE tasks set done=? WHERE task_id=?",
-                          [doneState, taskId])
-        })
-    }
-
-    function deleteAllTasks(projectId) {
-        root._database().transaction(function (tx) {
-            tx.executeSql("DELETE FROM tasks WHERE project_id =" + projectId)
-        })
-    }
-
-    function deleteTask(taskId) {
-        root._database().transaction(function (tx) {
-            tx.executeSql("DELETE FROM tasks WHERE task_id = ?", [taskId])
-        })
+        return result
     }
 }

@@ -147,58 +147,58 @@ Page {
                                 MyInput {
                                     id: s_1
                                     width: h_1.width
-                                    myInput: (index + 1) + ""
+                                    text: (index + 1) + ""
                                     enabled: false
                                 }
                                 MyInput {
                                     id: s_2
                                     width: h_2.width
-                                    myInput: modelData.addr
+                                    text: modelData.addr
 
-                                    onMyInputChanged: {
-                                        sensorsModel[index].addr = myInput
+                                    onEditingFinished: {
+                                        sensorsModel[index].addr = text
                                     }
                                 }
                                 MyInput {
                                     id: s_3
                                     width: h_3.width
-                                    myInput: modelData.instrument_name
-                                    onMyInputChanged: {
-                                        sensorsModel[index].instrument_name = myInput
+                                    text: modelData.instrument_name
+                                    onEditingFinished: {
+                                        sensorsModel[index].instrument_name = text
                                     }
                                 }
 
                                 MyInput {
                                     id: s_4
                                     width: h_4.width
-                                    myInput: modelData.airLine_name
-                                    onMyInputChanged: {
-                                        sensorsModel[index].airLine_name = myInput
+                                    text: modelData.airLine_name
+                                    onEditingFinished: {
+                                        sensorsModel[index].airLine_name = text
                                     }
                                 }
 
                                 MyInput {
                                     id: s_5
                                     width: h_5.width
-                                    myInput: modelData.detector_name
-                                    onMyInputChanged: {
-                                        sensorsModel[index].detector_name = myInput
+                                    text: modelData.detector_name
+                                    onEditingFinished: {
+                                        sensorsModel[index].detector_name = text
                                     }
                                 }
                                 MyInput {
                                     id: s_6
                                     width: h_6.width
-                                    myInput: modelData.detector_no
-                                    onMyInputChanged: {
-                                        sensorsModel[index].detector_no = myInput
+                                    text: modelData.detector_no
+                                    onEditingFinished: {
+                                        sensorsModel[index].detector_no = text
                                     }
                                 }
                                 MyInput {
                                     id: s_7
                                     width: h_7.width
-                                    myInput: modelData.sensor_no
-                                    onMyInputChanged: {
-                                        sensorsModel[index].sensor_no = myInput
+                                    text: modelData.sensor_no
+                                    onEditingFinished: {
+                                        sensorsModel[index].sensor_no = text
                                     }
                                 }
                             }

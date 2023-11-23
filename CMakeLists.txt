@@ -40,6 +40,7 @@ qt_add_qml_module(appLoopSnos
     QML_FILES view/MyInput.qml
     QML_FILES view/GrayLabel.qml
     QML_FILES AirBagPage.qml
+    RESOURCES config/data.sql
 )
 
 configure_file(${CMAKE_SOURCE_DIR}/config/sensors.json ${CMAKE_BINARY_DIR}/config/sensors.json COPYONLY)

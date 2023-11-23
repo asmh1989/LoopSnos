@@ -21,16 +21,18 @@ Rectangle {
 
     property var arr_flow_rt: []
     property var arr_umd1: []
+    property var arr_force: []
 
     // 循环测试
     property int times: 0
 
     property string resultPbb: ""
 
+    property int preIndex: appSettings.job_id
+
     function finish() {
         if (chart_timer.running) {
             resultPbb = getResultMsg("Sno")
-            manager.appendLog("chart  stop!!")
             chart_timer.stop()
             refreshStatus()
             reset_data()
@@ -43,6 +45,32 @@ Rectangle {
         umd1_x = 0
         arr_flow_rt.splice(0, arr_flow_rt.length)
         arr_umd1.splice(0, arr_umd1.length)
+        arr_force.splice(0, arr_force.length)
+    }
+
+    function save() {
+        let obj = manager.sampleData
+        if (obj) {
+            var trace_umd1_temp = obj[Common.TRACE_UMD1_TEMP] / 100.0
+            var func_status = obj[Common.FUNC_STATUS]
+
+            var ambient_temp = obj[Common.AMBIENT_TEMP] / 100.0
+            var ambient_humi = obj[Common.AMBIENT_HUMI]
+            var sensor = sensorsModel[sensorIndex]
+            var airbag = airBagsModel[appSettings.val_index]
+
+            var flow_rt = arr_flow_rt.join(",") + ""
+            var force = arr_force.join(",") + ""
+            var umd = arr_umd1.join(",") + ""
+
+            Database.insertTestData(
+                        appSettings.indoor_umd, appSettings.indoor_humi,
+                        trace_umd1_temp, ambient_temp, ambient_humi, "Sno",
+                        preIndex, sensor.instrument_name,
+                        sensor.airLine_name, sensor.detector_name,
+                        airbag.airbag_no, airbag.gas_conc, resultPbb, flow_rt,
+                        force, umd, sensor.detector_no, sensor.sensor_no)
+        }
     }
 
     function refreshStatus() {
@@ -55,12 +83,22 @@ Rectangle {
 
             var ambient_temp = obj[Common.AMBIENT_TEMP] / 100.0
             var ambient_humi = obj[Common.AMBIENT_HUMI]
-            d = "TD:" + trace_umd1_temp + "°C, TA:" + ambient_temp + "°C, RH:"
+            var cas = airBagsModel[appSettings.val_index].gas_conc
+            d = "TD:" + trace_umd1_temp + "°C TA:" + ambient_temp + "°C RH:"
                     + ambient_humi + "% " + sensor_name
+
+            if (cas) {
+                d = d + " " + cas + "ppb"
+            }
 
             if (func_status === Common.STATUS_END_FINISH
                     && resultPbb.length > 0) {
-                d = d + " 测试成功：" + resultPbb + " pbb"
+                d = d + " 测试成功" + resultPbb + "ppb"
+                save()
+
+                if (preIndex === appSettings.job_id) {
+                    appSettings.job_id += 1
+                }
             }
         }
 
@@ -76,7 +114,7 @@ Rectangle {
     }
 
     function fix_umd2(umd1) {
-        return (umd1 / appSettings.umd_standard).toFixed(2)
+        return (umd1 / appSettings.umd_standard).toFixed(1)
     }
 
     function getResultMsg(type) {
@@ -157,6 +195,7 @@ Rectangle {
 
                          addFlowRt(obj)
                          addUmd1(obj)
+                         arr_force.push(0)
                      }
     }
 
@@ -239,6 +278,7 @@ Rectangle {
         umd1_min_y = 100000
         umd1_max_y = 0
         chart_timer.start()
+        preIndex = appSettings.job_id
     }
 
     Item {
@@ -312,7 +352,7 @@ Rectangle {
             height: 40
             color: 'white'
             anchors.centerIn: parent
-            width: parent.width * 0.9
+            width: parent.width * 0.94
             padding: 6
             horizontalAlignment: Qt.AlignHCenter
             verticalAlignment: Qt.AlignVCenter
@@ -461,12 +501,15 @@ Rectangle {
 
         function onMessageReceived(msg) {
             if (msg === Common.MESSAGE_REFRESH_CONFIG) {
-                refreshStatus()
                 var new_url = Common.fix_url(sensorsModel[sensorIndex].addr)
-                if (new_url !== url) {
+                if (new_url !== (url + "")) {
                     manager.close()
                     url = new_url
+                    manager.sampleData = undefined
+                    lines_umd1.clear()
+                    chart.clear()
                 }
+                refreshStatus()
             }
         }
     }
