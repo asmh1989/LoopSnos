@@ -71,8 +71,12 @@ void redirectDebugMessages(QtMsgType type, const QMessageLogContext &context,
 
 int main(int argc, char *argv[]) {
   qputenv("QT_SCALE_FACTOR", "1.0");
+  qputenv("QT_QUICK_CONTROLS_MATERIAL_VARIANT", "Dense");
 
   QApplication app(argc, argv);
+
+  // windows下全局代理问题
+  QNetworkProxyFactory::setUseSystemConfiguration(false);
 
 #ifndef QT_DEBUG
   qInstallMessageHandler(redirectDebugMessages);
@@ -81,9 +85,9 @@ int main(int argc, char *argv[]) {
   app.setOrganizationName("em");
   app.setOrganizationDomain("em.com");
   app.setApplicationName("em");
-  //    QQuickStyle::setStyle("Material");
+  QQuickStyle::setStyle("Material");
 
-  QQuickStyle::setStyle("Universal");
+  //  QQuickStyle::setStyle("Universal");
 
   qmlRegisterType<FileIO, 1>("FileIO", 1, 0, "FileIO");
   qmlRegisterType<QmlEmSocket>("EmSockets", 1 /*major*/, 0 /*minor*/,

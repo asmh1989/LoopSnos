@@ -103,6 +103,26 @@ const METHOD_GET_SAMPLE = "get_sample"
 
 const MESSAGE_STOP_EXHALE = "__msg__stop__exhale"
 const MESSAGE_PRINT_RD = "__msg__print__rd"
+const MESSAGE_REFRESH_CONFIG = "__msg_refresh_label"
+
+const SENSORS_CONFIG_PATH = "./config/sensors.json"
+const AIRBAG_CONFIG_PATH = "./config/airbags.json"
+
+const JSON_SENSOR = {
+    "addr": "",
+    "airLine_name": "",
+    "detector_name": "",
+    "detector_no": "",
+    "id": "",
+    "instrument_name": "",
+    "sensor_no": ""
+}
+
+const JSON_AIRBAG = {
+    "id": "",
+    "airbag_no": "",
+    "gas_conc": ""
+}
 
 const HELXA_TIPS = {
     "init": "开始吸气前, 请先主动排空肺里的气",

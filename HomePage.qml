@@ -3,26 +3,23 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 Page {
-    readonly property int space: 4
+    readonly property int space: 6
+    property int space2: 6
+
     property var urls: []
 
     EventBus {
         id: bus
     }
+    padding: space
 
     Row {
         anchors.fill: parent
-        anchors.margins: space
 
         spacing: space
         Rectangle {
             width: parent.width - tool.width - space
             height: parent.height
-            border {
-                width: 1
-                color: 'gray'
-            }
-            radius: 4
 
             GridView {
                 id: grid
@@ -31,17 +28,16 @@ Page {
                 cellHeight: (parent.height - 4) / 2
                 model: urls
 
-                anchors.margins: 2
                 delegate: SnoView {
-                    width: grid.cellWidth
-                    height: grid.cellHeight
+                    width: grid.cellWidth - 4
+                    height: grid.cellHeight - 4
                     id: sno
                     url: urls[index]
                     border {
-                        width: 1
+                        width: 4
                         color: 'lightGray'
                     }
-                    radius: 4
+                    anchors.margins: 2
 
                     Connections {
                         target: bus
@@ -57,6 +53,10 @@ Page {
                                 sno.startLoopTest()
                             } else if (message === "StopLoopTest") {
                                 sno.stopLoopTest()
+                            } else if (message === "Close") {
+                                sno.close()
+                            } else if (message === "Refresh") {
+                                sno.refresh()
                             }
                         }
                     }
@@ -66,51 +66,196 @@ Page {
 
         Rectangle {
             id: tool
-            width: parent.width / 5
+            width: 320
             height: parent.height
-            border {
-                width: 1
-                color: 'blue'
-            }
-
-            radius: 4
 
             Column {
                 anchors.fill: parent
-                spacing: 6
+                spacing: space2
                 anchors.margins: 2
 
-                Button {
-                    text: "ReConnect"
+                Grid {
+                    spacing: space2
 
-                    onClicked: {
-                        bus.sendMessage("Open")
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    horizontalItemAlignment: Grid.AlignHCenter
+                    verticalItemAlignment: Grid.AlignVCenter
+
+                    Button {
+                        text: "连接"
+                        highlighted: true
+                        onClicked: {
+                            bus.sendMessage("Open")
+                        }
+                    }
+
+                    Button {
+                        text: "断开"
+                        highlighted: true
+                        onClicked: {
+                            bus.sendMessage("Close")
+                        }
+                    }
+
+                    Button {
+                        text: "刷新"
+                        highlighted: true
+                        onClicked: {
+                            bus.sendMessage("Refresh")
+                        }
+                    }
+                }
+
+                GridLayout {
+                    width: parent.width
+                    rows: 2
+                    columns: 2
+                    columnSpacing: space2
+                    rowSpacing: space2
+
+                    Label {
+                        text: '开通阀门'
+                        color: 'white'
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        horizontalAlignment: Qt.AlignHCenter
+                        verticalAlignment: Qt.AlignVCenter
+                        background: Rectangle {
+                            anchors.fill: parent
+                            color: Material.primary
+                        }
+                    }
+
+                    TextField {
+                        id: fm
+                        placeholderText: "请输入"
+                        Layout.maximumHeight: 40
+                        validator: IntValidator {
+                            bottom: 1
+                            top: 8
+                        }
+                    }
+
+                    Label {
+                        text: '室内/箱内温度(°C)'
+                        color: 'white'
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        horizontalAlignment: Qt.AlignHCenter
+                        verticalAlignment: Qt.AlignVCenter
+                        background: Rectangle {
+                            anchors.fill: parent
+                            color: Material.primary
+                        }
+                    }
+
+                    TextField {
+                        placeholderText: "请输入"
+                        Layout.maximumHeight: 40
+
+                        validator: DoubleValidator {
+                            bottom: 5
+                            top: 35
+                            decimals: 1
+                        }
+                    }
+
+                    Label {
+                        text: '室内/箱内湿度(%)'
+                        color: 'white'
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        horizontalAlignment: Qt.AlignHCenter
+                        verticalAlignment: Qt.AlignVCenter
+                        background: Rectangle {
+                            anchors.fill: parent
+                            color: Material.primary
+                        }
+                    }
+
+                    TextField {
+                        placeholderText: "请输入"
+                        Layout.maximumHeight: 40
+
+                        validator: IntValidator {
+                            bottom: 1
+                            top: 100
+                        }
                     }
                 }
 
                 Button {
-                    text: "StartSno"
-
+                    width: parent.width
+                    text: "气袋管理"
                     onClicked: {
-                        bus.sendMessage("Sno")
+                        openAirBagPage()
                     }
                 }
 
                 Button {
-                    text: "ForceStop"
+                    width: parent.width
+                    text: "检测器管理"
 
                     onClicked: {
-                        bus.sendMessage("ForceStop")
+                        openSensorsPage()
                     }
                 }
 
-                Text {
-                    text: "离线循环测试"
+                Label {
+                    width: parent.width
+                    text: "单次测试"
+                    height: 40
+                    color: 'white'
+                    horizontalAlignment: Qt.AlignHCenter
+                    verticalAlignment: Qt.AlignVCenter
+                    background: Rectangle {
+                        anchors.fill: parent
+                        color: Material.primary
+                    }
+                }
+                Row {
+                    Layout.fillWidth: true
+                    spacing: space2
+                    ComboBox {
+                        id: cb
+                        height: 40
+                        model: ["Sno"]
+                    }
+                    Button {
+                        text: '开始'
+                        height: 40
+                        onClicked: {
+                            bus.sendMessage("Sno")
+                        }
+                    }
+
+                    Button {
+                        text: '停止'
+                        height: 40
+
+                        onClicked: {
+                            bus.sendMessage("ForceStop")
+                        }
+                    }
+                }
+
+                Label {
+                    width: parent.width
+                    text: "离线循环"
+                    height: 40
+                    color: 'white'
+                    horizontalAlignment: Qt.AlignHCenter
+                    verticalAlignment: Qt.AlignVCenter
+                    background: Rectangle {
+                        anchors.fill: parent
+                        color: Material.primary
+                    }
                 }
 
                 Row {
                     width: parent.width
                     height: 40
+                    spacing: space2 / 2
                     Text {
                         text: "次数:"
                         anchors.verticalCenter: parent.verticalCenter
@@ -118,7 +263,10 @@ Page {
 
                     TextField {
                         id: t_times
+                        width: 40
+                        height: 30
                         text: appSettings.offline_times
+                        anchors.verticalCenter: parent.verticalCenter
                         validator: IntValidator {
                             bottom: 2
                             top: 999
@@ -132,100 +280,42 @@ Page {
 
                     TextField {
                         id: t_interval
+                        width: 40
+                        height: 30
+                        anchors.verticalCenter: parent.verticalCenter
                         text: appSettings.offline_interval
                         validator: IntValidator {
                             bottom: 0
                             top: 9999
                         }
                     }
-                }
-
-                Row {
-
-                    width: parent.width
-                    spacing: 4
                     Button {
-                        text: "离线循环"
+                        text: '开始'
+                        height: 40
+
                         onClicked: {
                             bus.sendMessage("StartLoopTest")
                         }
                     }
 
                     Button {
-                        text: "结束循环"
+                        text: '停止'
+                        height: 40
                         onClicked: {
                             bus.sendMessage("StopLoopTest")
                         }
                     }
                 }
 
-                Text {
-                    text: "UMD帧间隔"
-                }
-
-                Flow {
+                Button {
                     width: parent.width
-                    spacing: 4
-                    TextField {
-                        id: t1
-                        text: appSettings.umd_state1
-                        height: 40
-                        validator: IntValidator {
-                            bottom: 0
-                            top: 300
-                        }
-                    }
-                    TextField {
-                        id: t2
-                        height: t1.height
-                        text: appSettings.umd_state2
-                        validator: IntValidator {
-                            bottom: 50
-                            top: 400
-                        }
-                    }
-                    TextField {
-                        id: t3
-                        height: t1.height
-                        text: appSettings.umd_state3
-                        validator: IntValidator {
-                            bottom: 350
-                            top: 500
-                        }
-                    }
-                    TextField {
-                        id: t4
-                        height: t1.height
-                        text: appSettings.umd_state4
-                        validator: IntValidator {
-                            bottom: 450
-                            top: 650
-                        }
-                    }
+                    text: "数据分析"
                 }
 
-                //                Row {
-                //                    width: parent.width
-                //                    height: 40
-                //                    TextField {
-                //                        id: t3
-                //                        height: parent.height
-                //                        text: appSettings.umd_state3
-                //                        validator: IntValidator {
-                //                            bottom: 350
-                //                            top: 500
-                //                        }
-                //                    }
-                //                    TextField {
-                //                        id: t4
-                //                        height: parent.height
-                //                        text: appSettings.umd_state4
-                //                        validator: IntValidator {
-                //                            bottom: 450
-                //                            top: 650
-                //                        }
-                //                    }
-                //                }
+                Button {
+                    width: parent.width
+                    text: "曲线分析"
+                }
             }
         }
     }
@@ -233,16 +323,18 @@ Page {
     function save_cache() {
         appSettings.offline_times = parseInt(t_times.text)
         appSettings.offline_interval = parseInt(t_interval.text)
-        appSettings.umd_state1 = parseInt(t1.text)
-        appSettings.umd_state2 = parseInt(t2.text)
-        appSettings.umd_state3 = parseInt(t3.text)
-        appSettings.umd_state4 = parseInt(t4.text)
     }
 
     Component.onCompleted: {
-        urls.push("ws://192.168.2.33:8080")
-        urls.push("ws://192.168.2.184:8080")
-        urls.push("ws://192.168.2.77:8080")
+
+        sensorsModel.forEach(function (element) {
+            var addr = element.addr
+            if (!addr.startsWith("ws://")) {
+                addr = "ws://" + addr
+            }
+
+            urls.push(addr)
+        })
         grid.model = urls
     }
 }

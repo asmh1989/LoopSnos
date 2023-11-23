@@ -24,11 +24,14 @@ Rectangle {
     // 循环测试
     property int times: 0
 
+    property string resultPbb: ""
+
     function finish() {
         if (chart_timer.running) {
-            result.text = getResultMsg("Sno")
+            resultPbb = getResultMsg("Sno")
             manager.appendLog("chart  stop!!")
             chart_timer.stop()
+            refreshStatus()
             reset_data()
             _start_time = 0
         }
@@ -39,6 +42,32 @@ Rectangle {
         umd1_x = 0
         arr_flow_rt.splice(0, arr_flow_rt.length)
         arr_umd1.splice(0, arr_umd1.length)
+    }
+
+    function refreshStatus() {
+        let obj = manager.sampleData
+        let sensor_name = ""
+        sensorsModel.forEach(function (e) {
+            if ((manager.url + "").includes(e.addr)) {
+                sensor_name = e.detector_name
+            }
+        })
+        let d = sensor_name
+        if (obj) {
+            var trace_umd1_temp = obj[Common.TRACE_UMD1_TEMP] / 100.0
+            var func_status = obj[Common.FUNC_STATUS]
+
+            var ambient_temp = obj[Common.AMBIENT_TEMP] / 100.0
+            var ambient_humi = obj[Common.AMBIENT_HUMI]
+            d = "TD:" + trace_umd1_temp + "°C, TA:" + ambient_temp + "°C, RH:"
+                    + ambient_humi + "% " + sensor_name
+
+            if (Common.is_helxa_finish(func_status) && resultPbb.length > 0) {
+                d = d + " 测试成功： " + resultPbb + " pbb"
+            }
+        }
+
+        result.text = d
     }
 
     function fix_umd(trace_umd1_temp, umd1) {
@@ -79,8 +108,9 @@ Rectangle {
                             manager.sampleData[Common.TRACE_UMD1_TEMP] / 100.0,
                             r)
 
-                msg = "测试成功: 气袋浓度(" + appSettings.puppet_con + ") umd1均值差 = "
-                        + fix_r + "/" + fix_umd2(fix_r) + " (ppb)"
+                //                msg = "测试成功: 气袋浓度(" + appSettings.puppet_con + ") umd1均值差 = "
+                //                        + fix_r + "/" + fix_umd2(fix_r) + " (ppb)"
+                msg = fix_umd2(fix_r)
 
                 //                save_to_file(r, fix_r, fix_umd2(fix_r))
             } else {
@@ -279,17 +309,27 @@ Rectangle {
                 titleText: "UMD1 (pbb)"
             }
         }
-        Text {
+        Label {
             text: ""
-            color: 'red'
             id: result
+            height: 40
+            color: 'white'
             anchors.centerIn: parent
+            width: parent.width * 0.9
+            padding: 6
+            horizontalAlignment: Qt.AlignLeft
+            verticalAlignment: Qt.AlignVCenter
+            background: Rectangle {
+                anchors.fill: parent
+                color: Material.primary
+            }
         }
 
         Text {
             anchors.topMargin: 6
             color: 'red'
             id: connectTxt
+            text: url
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.top: parent.top
         }
@@ -318,6 +358,18 @@ Rectangle {
     function open() {
         if (!manager.is_open) {
             manager.open()
+        }
+    }
+
+    function close() {
+        if (manager.is_open) {
+            manager.close()
+        }
+    }
+
+    function refresh() {
+        if (manager.is_open) {
+            manager.refresh()
         }
     }
 
@@ -400,6 +452,20 @@ Rectangle {
 
         function onConnectReceived(msg) {
             connectTxt.text = manager.url + " " + msg
+        }
+
+        function onSampleDataChanged() {
+            refreshStatus()
+        }
+    }
+
+    Connections {
+        target: eventBus
+
+        function onMessageReceived(msg) {
+            if (msg === Common.MESSAGE_REFRESH_CONFIG) {
+                refreshStatus()
+            }
         }
     }
 }

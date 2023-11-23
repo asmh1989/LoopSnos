@@ -35,7 +35,15 @@ qt_add_qml_module(appLoopSnos
     QML_FILES EmSocketManager.qml
     QML_FILES Database.qml
     QML_FILES HomePage.qml
+    RESOURCES images.qrc
+    QML_FILES SensorsPage.qml
+    QML_FILES view/MyInput.qml
+    QML_FILES view/GrayLabel.qml
+    QML_FILES AirBagPage.qml
 )
+
+configure_file(${CMAKE_SOURCE_DIR}/config/sensors.json ${CMAKE_BINARY_DIR}/config/sensors.json COPYONLY)
+
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
@@ -45,17 +53,14 @@ set_target_properties(appLoopSnos PROPERTIES
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
     MACOSX_BUNDLE TRUE
-#    WIN32_EXECUTABLE TRUE
+    WIN32_EXECUTABLE TRUE
 )
 
 target_link_libraries(appLoopSnos
     PUBLIC Qt6::QuickControls2
     Qt6::Quick
-#    Qt6::Core
     Qt6::WebSockets
     Qt6::Charts
-#    Qt::Gui
-#    Qt::Qml
     Qt6::SerialPort
     QtAES
 )
