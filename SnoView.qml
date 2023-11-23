@@ -63,13 +63,14 @@ Rectangle {
             var force = arr_force.join(",") + ""
             var umd = arr_umd1.join(",") + ""
 
-            Database.insertTestData(
-                        appSettings.indoor_umd, appSettings.indoor_humi,
-                        trace_umd1_temp, ambient_temp, ambient_humi, "Sno",
-                        preIndex, sensor.instrument_name,
-                        sensor.airLine_name, sensor.detector_name,
-                        airbag.airbag_no, airbag.gas_conc, resultPbb, flow_rt,
-                        force, umd, sensor.detector_no, sensor.sensor_no)
+            db.insertTestData(appSettings.indoor_umd, appSettings.indoor_humi,
+                              trace_umd1_temp, ambient_temp,
+                              ambient_humi, "Sno",
+                              preIndex, sensor.instrument_name,
+                              sensor.airLine_name, sensor.detector_name,
+                              airbag.airbag_no, airbag.gas_conc,
+                              resultPbb, flow_rt, force, umd,
+                              sensor.detector_no, sensor.sensor_no)
         }
     }
 
@@ -95,7 +96,6 @@ Rectangle {
                     && resultPbb.length > 0) {
                 d = d + " 测试成功" + resultPbb + "ppb"
                 save()
-
                 if (preIndex === appSettings.job_id) {
                     appSettings.job_id += 1
                 }

@@ -3,6 +3,8 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import "common.js" as Common
 
+import TextFieldDoubleValidator
+
 Page {
     readonly property int space: 6
     property int space2: 6
@@ -129,14 +131,14 @@ Page {
                         }
                     }
 
-                    TextField {
+                    ComboBox {
                         id: tf_fm
-                        placeholderText: "请输入"
-                        text: appSettings.val_index + ""
-                        Layout.maximumHeight: 40
-                        validator: IntValidator {
-                            bottom: 1
-                            top: 8
+                        model: [1, 2, 3, 4, 5, 6, 7, 8]
+
+                        currentIndex: appSettings.val_index
+                        onCurrentTextChanged: {
+                            appSettings.val_index = tf_fm.currentIndex
+                            eventBus.sendMessage(Common.MESSAGE_REFRESH_CONFIG)
                         }
                     }
 
@@ -157,11 +159,11 @@ Page {
                         id: tf_umd
                         placeholderText: "请输入"
                         Layout.maximumHeight: 40
-                        text: appSettings.indoor_umd + ""
+                        text: appSettings.indoor_umd
 
-                        validator: DoubleValidator {
-                            bottom: 5
-                            top: 35
+                        validator: TextFieldDoubleValidator {
+                            bottom: 0.01
+                            top: 35.0
                             decimals: 1
                         }
                     }
@@ -183,11 +185,12 @@ Page {
                         id: tf_humi
                         placeholderText: "请输入"
                         Layout.maximumHeight: 40
-                        text: appSettings.indoor_humi + ""
+                        text: appSettings.indoor_humi
 
-                        validator: IntValidator {
-                            bottom: 1
+                        validator: TextFieldDoubleValidator {
+                            bottom: 0.01
                             top: 100
+                            decimals: 0
                         }
                     }
                 }
@@ -331,8 +334,6 @@ Page {
     function save_cache() {
         appSettings.offline_times = parseInt(t_times.text)
         appSettings.offline_interval = parseInt(t_interval.text)
-
-        appSettings.val_index = parseInt(tf_fm.text)
         appSettings.indoor_humi = parseInt(tf_humi.text)
         appSettings.indoor_umd = parseFloat(tf_umd.text)
     }

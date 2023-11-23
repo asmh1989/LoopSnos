@@ -16,31 +16,31 @@ qt_add_executable(appLoopSnos
     src/main.cpp
 )
 
-set_source_files_properties(Database.qml PROPERTIES
-    QT_QML_SINGLETON_TYPE TRUE
-)
+#set_source_files_properties(Database.qml PROPERTIES
+#    QT_QML_SINGLETON_TYPE TRUE
+#)
 
 qt_add_qml_module(appLoopSnos
     URI LoopSnos
     VERSION 1.0
-    QML_FILES Main.qml EventBus.qml
-    QML_FILES common.js
-    QML_FILES Toast.qml
-    QML_FILES ToastManager.qml
+#    QML_FILES Main.qml
+#    QML_FILES common.js
+#    QML_FILES Toast.qml EventBus.qml
+#    QML_FILES ToastManager.qml
     SOURCES src/fileio.h src/fileio.cpp
     SOURCES src/qmlemsocket.h src/qmlemsocket.cpp
     SOURCES src/model.h
     SOURCES src/utils.h src/utils.cpp
-    QML_FILES SnoView.qml
-    QML_FILES EmSocketManager.qml
-    QML_FILES Database.qml
-    QML_FILES HomePage.qml
+#    QML_FILES SnoView.qml
+#    QML_FILES EmSocketManager.qml
+#    QML_FILES Database.qml
+#    QML_FILES HomePage.qml
     RESOURCES images.qrc
-    QML_FILES SensorsPage.qml
-    QML_FILES view/MyInput.qml
-    QML_FILES view/GrayLabel.qml
-    QML_FILES AirBagPage.qml
-    RESOURCES config/data.sql
+    SOURCES src/TextFieldDoubleValidator.h
+#    QML_FILES SensorsPage.qml
+#    QML_FILES view/MyInput.qml
+#    QML_FILES view/GrayLabel.qml
+#    QML_FILES AirBagPage.qml
 )
 
 configure_file(${CMAKE_SOURCE_DIR}/config/sensors.json ${CMAKE_BINARY_DIR}/config/sensors.json COPYONLY)

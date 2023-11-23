@@ -2,5 +2,18 @@
     <qresource prefix="/">
         <file>img/back.png</file>
         <file>img/menu.png</file>
+        <file>AirBagPage.qml</file>
+        <file>Database.qml</file>
+        <file>EmSocketManager.qml</file>
+        <file>EventBus.qml</file>
+        <file>HomePage.qml</file>
+        <file>SensorsPage.qml</file>
+        <file>SnoView.qml</file>
+        <file>Toast.qml</file>
+        <file>ToastManager.qml</file>
+        <file>view/GrayLabel.qml</file>
+        <file>view/MyInput.qml</file>
+        <file>Main.qml</file>
+        <file>common.js</file>
     </qresource>
 </RCC>

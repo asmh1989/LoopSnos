@@ -6,6 +6,7 @@
 #include <QQmlApplicationEngine>
 #include <QQuickStyle>
 
+#include "TextFieldDoubleValidator.h"
 #include "fileio.h"
 #include "qmlemsocket.h"
 
@@ -92,23 +93,25 @@ int main(int argc, char *argv[]) {
   qmlRegisterType<FileIO, 1>("FileIO", 1, 0, "FileIO");
   qmlRegisterType<QmlEmSocket>("EmSockets", 1 /*major*/, 0 /*minor*/,
                                "EmSocket");
+  qmlRegisterType<TextFieldDoubleValidator>("TextFieldDoubleValidator", 1, 0,
+                                            "TextFieldDoubleValidator");
 
   QQmlApplicationEngine engine;
   engine.setOfflineStoragePath("./");
 
-  QObject::connect(
-      &engine, &QQmlApplicationEngine::objectCreationFailed, &app,
-      []() { QCoreApplication::exit(-1); }, Qt::QueuedConnection);
-  engine.loadFromModule("LoopSnos", "Main");
-
-  //  const QUrl url(u"qrc:/LoopSnos/Main.qml"_qs);
   //  QObject::connect(
-  //      &engine, &QQmlApplicationEngine::objectCreated, &app,
-  //      [url](QObject *obj, const QUrl &objUrl) {
-  //        if (!obj && url == objUrl) QCoreApplication::exit(-1);
-  //      },
-  //      Qt::QueuedConnection);
-  //  engine.load(url);
+  //      &engine, &QQmlApplicationEngine::objectCreationFailed, &app,
+  //      []() { QCoreApplication::exit(-1); }, Qt::QueuedConnection);
+  //  engine.loadFromModule("LoopSnos", "Main");
+
+  const QUrl url(u"qrc:/Main.qml"_qs);
+  QObject::connect(
+      &engine, &QQmlApplicationEngine::objectCreated, &app,
+      [url](QObject *obj, const QUrl &objUrl) {
+        if (!obj && url == objUrl) QCoreApplication::exit(-1);
+      },
+      Qt::QueuedConnection);
+  engine.load(url);
 
   return app.exec();
 }
