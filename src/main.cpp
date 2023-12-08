@@ -9,6 +9,7 @@
 #include "TextFieldDoubleValidator.h"
 #include "fileio.h"
 #include "qmlemsocket.h"
+#include "syssettings.h"
 
 const qint64 LOG_FILE_LIMIT = 300000;
 const QString LOG_PATH = "log/";
@@ -91,6 +92,7 @@ int main(int argc, char *argv[]) {
   //  QQuickStyle::setStyle("Universal");
 
   qmlRegisterType<FileIO, 1>("FileIO", 1, 0, "FileIO");
+  qmlRegisterType<SysSettings, 1>("SysSettings", 1, 0, "SysSettings");
   qmlRegisterType<QmlEmSocket>("EmSockets", 1 /*major*/, 0 /*minor*/,
                                "EmSocket");
   qmlRegisterType<TextFieldDoubleValidator>("TextFieldDoubleValidator", 1, 0,

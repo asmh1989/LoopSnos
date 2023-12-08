@@ -1,6 +1,5 @@
 .pragma library
 
-const SYS_CNT = "DSA_R16_SYS_CNT"
 const DEVICE_STATUS = "DSA_R16_DEVICE_STATUS"
 const FUNC_NAME = "DSA_R16_FUNC_NAME"
 const FUNC_ACK = "DSA_R16_FUNC_ACK"
@@ -10,6 +9,7 @@ const UMD2_STATUS = "DSA_R16_UMD2_STATUS"
 const FLOW_CNT = "DSA_R16_FLOW_CNT"
 const FLOW_SIZE = "DSA_R16_FLOW_SIZE"
 const FLOW_RT = "DSA_R16_FLOW_RT"
+const PRESS_RT = "DSA_R16_PRESS_RT"
 const FLOW_TIME = "DSA_R16_FLOW_TIME"
 const TRACE_CNT = "DSA_R16_TRACE_CNT"
 const TRACE_SIZE = "DSA_R16_TRACE_SIZE"
@@ -20,35 +20,14 @@ const AMBIENT_TEMP = "DSA_R16_AMBIENT_TEMP"
 const AMBIENT_HUMI = "DSA_R16_AMBIENT_HUMI"
 const RTC_UNIX1 = "DSA_R16_RTC_UNIX1"
 const RTC_UNIX2 = "DSA_R16_RTC_UNIX2"
-const TRACE_UMD1_TEMP = "DSA_R16_TRACE_UMD1_TEMP"
-const TRACE_UMD2_TEMP = "DSA_R16_TRACE_UMD2_TEMP"
+const UMD1_TEMP = "DSA_R16_UMD1_TEMP"
+const UMD2_TEMP = "DSA_R16_UMD2_TEMP"
+const UMD1_BASELINE = "DSA_R16_UMD1_BASELINE"
+
 const FLOW_TEMP = "DSA_R16_FLOW_TEMP"
 const FLOW_HUMI = "DSA_R16_FLOW_HUMI"
-const FSM_CNT = "DSA_R16_FSM_CNT"
-const FSM_FAULTFSM = "DSA_R16_FSM_FAULTFSM"
-const FSM_PRESS_DIFFFSM = "DSA_R16_FSM_PRESS_DIFFFSM"
-const FSM_FLOW = "DSA_R16_FSM_FLOW"
-const FSM_SAMPLE_HUMI = "DSA_R16_FSM_SAMPLE_HUMI"
-const FSM_SAMPLE_TEMP = "DSA_R16_FSM_SAMPLE_TEMP"
-const FSM_AMBIENT_HUMI = "DSA_R16_FSM_AMBIENT_HUMI"
-const FSM_AMBIENT_TEMP = "DSA_R16_FSM_AMBIENT_TEMP"
-const FSM_ATMOS_X1000 = "DSA_R16_FSM_ATMOS_X1000"
-const FSM_ATMOS_X1FSM = "DSA_R16_FSM_ATMOS_X1FSM"
-const FSM_ATMOS_BASE_X1000 = "DSA_R16_FSM_ATMOS_BASE_X1000"
-const FSM_ATMOS_BASE_X1 = "DSA_R16_FSM_ATMOS_BASE_X1"
-const FSM_ATMOS_PRESS_DIFF = "DSA_R16_FSM_ATMOS_PRESS_DIFF"
 const UMD1_CNT = "DSA_R16_UMD1_CNT"
-const UMD1_FAULT = "DSA_R16_UMD1_FAULT"
 const UMD1_VBAT = "DSA_R16_UMD1_VBAT"
-const UMD1_VREF = "DSA_R16_UMD1_VREF"
-const UMD1_TEMPER = "DSA_R16_UMD1_TEMPER"
-const UMD1_ADC_CNT = "DSA_R16_UMD1_ADC_CNT"
-const UMD1_ADC_DELTA = "DSA_R16_UMD1_ADC_DELTA"
-const UMD1_ADC_DELTA_AVG = "DSA_R16_UMD1_ADC_DELTA_AVG"
-const UMD1_ADC_SEN = "DSA_R16_UMD1_ADC_SEN"
-const UMD1_ADC_SEN_AVG = "DSA_R16_UMD1_ADC_SEN_AVG"
-const UMD1_ADC_AUX = "DSA_R16_UMD1_ADC_AUX"
-const UMD1_ADC_AUX_AVG = "DSA_R16_UMD1_ADC_AUX_AVG"
 const UPDATE_TIME = "update_time"
 
 // 采样状态
@@ -93,21 +72,34 @@ const HELXA_STATUS_SAMPLE = 0
 const HELXA_STATUS_ANAY = 1
 const HELXA_STATUS_FINISH = 2
 
-var _sample_values = [FUNC_STATUS, FLOW_RT, FUNC_ACK, FUNC_NAME, AMBIENT_TEMP, TRACE_UMD1_TEMP, TRACE_UMD1, AMBIENT_HUMI]
+var _sample_values = [FUNC_STATUS, FLOW_RT, FUNC_ACK, FUNC_NAME, AMBIENT_TEMP, UMD1_TEMP, TRACE_UMD1, AMBIENT_HUMI, PRESS_RT, AMBIENT_PRESS, UMD1_STATUS, UMD1_BASELINE]
 
 const METHOD_START_HELXA = "start_exhale_test"
 const METHOD_HELXA_STARTING = "exhale_starting"
 const METHOD_HELXA_STARTED = "exhale_started"
 const METHOD_DEVICE_HELXA_FAILED = "device_exhale_failed"
 const METHOD_GET_SAMPLE = "get_sample"
+const METHOD_GET_PRINTER_SERIAL_STATUS = "get_printer_serial_status"
+const METHOD_GET_POWER_DATA = "get_power_data"
+const METHOD_DB_QUERY = "db_query"
+const METHOD_SHUTDOWN = "shutdown"
+const METHOD_CLEAR_POWER_KEY = "clear_power_key"
+const METHOD_FINISH_QC_OR_COMBINE = "finish_qc_or_combine"
+const METHOD_READ_UMD_PARAMS = "read_umd_params"
+
+const TABLE_EXHALE_TEST = "exhale_test"
+const TABLE_PATIENT = "patient"
+const TABLE_DEVICE_INFO = "device_info"
+const TABLE_SYS_SETTINGS = "sys_setting"
 
 const MESSAGE_STOP_EXHALE = "__msg__stop__exhale"
 const MESSAGE_PRINT_RD = "__msg__print__rd"
-const MESSAGE_REFRESH_CONFIG = "__msg_refresh_label"
+const MESSAGE_DATA_RECEIVED = "__msg__received"
+const MESSAGE_SOCKET_CONNECT = "__msg__socket_connect"
 
 const SENSORS_CONFIG_PATH = "./config/sensors.json"
 const AIRBAG_CONFIG_PATH = "./config/airbags.json"
-
+const MESSAGE_REFRESH_CONFIG = "__msg_refresh_label"
 const JSON_SENSOR = {
     "addr": "",
     "airLine_name": "",
@@ -115,7 +107,8 @@ const JSON_SENSOR = {
     "detector_no": "",
     "id": "",
     "instrument_name": "",
-    "sensor_no": ""
+    "sensor_no": "",
+    "umd_standard": ""
 }
 
 const JSON_AIRBAG = {

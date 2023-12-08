@@ -15,6 +15,7 @@ Page {
         id: bus
     }
     padding: space
+    title: "home"
 
     Row {
         anchors.fill: parent
@@ -50,11 +51,17 @@ Page {
                             save_cache()
                             if (message === "Sno") {
                                 sno.startSno()
+                                if (content === true) {
+                                    isQc = true
+                                } else {
+                                    isQc = false
+                                }
                             } else if (message === "ForceStop") {
                                 sno.forceStop()
                             } else if (message === "Open") {
                                 sno.open()
                             } else if (message === "StartLoopTest") {
+                                setTestTime()
                                 sno.startLoopTest()
                             } else if (message === "StopLoopTest") {
                                 sno.stopLoopTest()
@@ -78,6 +85,20 @@ Page {
                 anchors.fill: parent
                 spacing: space2
                 anchors.margins: 2
+
+                Label {
+                    id: time
+                    width: parent.width
+                    text: "测试时间"
+                    height: 30
+                    color: 'white'
+                    horizontalAlignment: Qt.AlignHCenter
+                    verticalAlignment: Qt.AlignVCenter
+                    background: Rectangle {
+                        anchors.fill: parent
+                        color: Material.primary
+                    }
+                }
 
                 Grid {
                     spacing: space2
@@ -123,6 +144,7 @@ Page {
                         color: 'white'
                         Layout.fillWidth: true
                         Layout.fillHeight: true
+                        Layout.maximumHeight: 40
                         horizontalAlignment: Qt.AlignHCenter
                         verticalAlignment: Qt.AlignVCenter
                         background: Rectangle {
@@ -134,11 +156,12 @@ Page {
                     ComboBox {
                         id: tf_fm
                         model: [1, 2, 3, 4, 5, 6, 7, 8]
-
                         currentIndex: appSettings.val_index
+                        Layout.maximumHeight: 40
                         onCurrentTextChanged: {
                             appSettings.val_index = tf_fm.currentIndex
                             eventBus.sendMessage(Common.MESSAGE_REFRESH_CONFIG)
+                            openVal()
                         }
                     }
 
@@ -215,7 +238,7 @@ Page {
                 Label {
                     width: parent.width
                     text: "单次测试"
-                    height: 40
+                    height: 30
                     color: 'white'
                     horizontalAlignment: Qt.AlignHCenter
                     verticalAlignment: Qt.AlignVCenter
@@ -230,6 +253,7 @@ Page {
                     ComboBox {
                         id: cb
                         height: 40
+                        width: 80
                         model: ["Sno"]
                     }
                     Button {
@@ -248,12 +272,20 @@ Page {
                             bus.sendMessage("ForceStop")
                         }
                     }
+                    Button {
+                        text: '校准'
+                        height: 40
+
+                        onClicked: {
+                            bus.sendMessage("Sno", true)
+                        }
+                    }
                 }
 
                 Label {
                     width: parent.width
                     text: "离线循环"
-                    height: 40
+                    height: 30
                     color: 'white'
                     horizontalAlignment: Qt.AlignHCenter
                     verticalAlignment: Qt.AlignVCenter
@@ -344,5 +376,24 @@ Page {
             urls.push(Common.fix_url(element.addr))
         })
         grid.model = urls
+    }
+
+    Connections {
+        target: stackView
+
+        function onCurrentItemChanged() {
+            if (stackView.currentItem
+                    && stackView.currentItem.title === title) {
+                refreshVal()
+            }
+        }
+    }
+
+    Connections {
+        target: window
+        function onPreTestDateChanged() {
+            time.text = "测试时间：" + Common.formatDate(preTestDate)
+            refreshVal()
+        }
     }
 }

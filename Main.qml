@@ -7,6 +7,7 @@ import "common.js" as Common
 import Qt.labs.settings 1.0
 import QtQuick.Controls.Material
 import FileIO
+import EmSockets
 
 ApplicationWindow {
     id: window
@@ -23,8 +24,12 @@ ApplicationWindow {
     Material.primary: Material.Blue
     Material.accent: Material.Blue
 
+    property var preTestDate
+
     property var sensorsModel: []
     property var airBagsModel: []
+
+    property bool isQc: false
 
     Action {
         id: navigateBackAction
@@ -54,6 +59,9 @@ ApplicationWindow {
         } catch (e) {
             return []
         }
+    }
+    function getGasConc() {
+        return parseInt(airBagsModel[appSettings.val_index].gas_conc)
     }
 
     function saveJsonFile(source, data) {
@@ -90,8 +98,8 @@ ApplicationWindow {
         stackView.push("AirBagPage.qml")
     }
 
-    function showToast(msg) {
-        toast.show(msg, 1500)
+    function showToast(msg, time) {
+        toast.show(msg, time ? time : 1500)
     }
 
     function setTimeout(func, interval, ...params) {
@@ -123,6 +131,8 @@ ApplicationWindow {
                                                  Common.JSON_SENSOR)))
             })
         }
+
+        webSocket.open()
     }
 
     Component.onDestruction: {
@@ -147,6 +157,50 @@ ApplicationWindow {
                 destroy()
             }
         }
+    }
+
+    function openVal() {
+        if (webSocket.status === EmSocket.Open) {
+            webSocket.sendTextMessage(JSON.stringify({
+                                                         "method": "valve",
+                                                         "args": [appSettings.val_index + 1]
+                                                     }))
+        } else {
+            webSocket.open()
+        }
+    }
+
+    function refreshVal() {
+        if (webSocket.status === EmSocket.Open) {
+            webSocket.sendTextMessage(JSON.stringify({
+                                                         "method": "state"
+                                                     }))
+        } else {
+            webSocket.open()
+        }
+    }
+
+    EmSocket {
+        id: webSocket
+        url: appSettings.val_url
+        type: EmSocket.WebSocket
+        onTextMessageReceived: function (message) {
+            console.log("阀门服务端 recv = " + message)
+        }
+        onStatusChanged: {
+            if (webSocket.status === EmSocket.Error) {
+                console.log("阀门服务端 error = " + webSocket.errorString)
+            } else if (webSocket.status === EmSocket.Open) {
+                console.log("阀门服务端 Connected ")
+                refreshVal()
+            } else if (webSocket.status === EmSocket.Closed) {
+                console.log("阀门服务端 Closed ")
+            } else if (webSocket.status === EmSocket.Connecting) {
+                console.log("阀门服务端 Connecting ")
+            }
+        }
+
+        active: true
     }
 
     Settings {
@@ -176,5 +230,7 @@ ApplicationWindow {
         property int val_index: 0
         property real indoor_umd: 25
         property int indoor_humi: 48
+
+        property string val_url: "ws://192.168.2.184:5533"
     }
 }

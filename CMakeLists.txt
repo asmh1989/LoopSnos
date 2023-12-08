@@ -37,6 +37,7 @@ qt_add_qml_module(appLoopSnos
 #    QML_FILES HomePage.qml
     RESOURCES images.qrc
     SOURCES src/TextFieldDoubleValidator.h
+    SOURCES src/syssettings.h src/syssettings.cpp
 #    QML_FILES SensorsPage.qml
 #    QML_FILES view/MyInput.qml
 #    QML_FILES view/GrayLabel.qml

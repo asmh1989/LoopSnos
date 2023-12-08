@@ -6,6 +6,7 @@ import "./view"
 import "common.js" as Common
 
 Page {
+    property int btnIndex: -1
 
     header: ToolBar {
         id: bar
@@ -38,6 +39,10 @@ Page {
 
     padding: 20
 
+    EmSocketManager {
+        id: socket
+    }
+
     Item {
         anchors.fill: parent
         anchors.margins: 20
@@ -45,10 +50,6 @@ Page {
             width: parent.width
             height: parent.height * 0.7
 
-            //            border {
-            //                width: 1
-            //                color: 'gray'
-            //            }
             Column {
                 anchors.fill: parent
                 anchors.margins: 1
@@ -108,6 +109,20 @@ Page {
                             Layout.fillWidth: true
                             Layout.minimumWidth: 60
                             text: qsTr("传感器编号")
+                        }
+
+                        GrayLabel {
+                            id: h_8
+                            Layout.fillWidth: true
+                            Layout.minimumWidth: 60
+                            text: qsTr("灵敏度")
+                        }
+
+                        GrayLabel {
+                            id: h_9
+                            Layout.fillWidth: true
+                            Layout.minimumWidth: 60
+                            text: qsTr("刷新")
                         }
                     }
                 }
@@ -189,6 +204,7 @@ Page {
                                     id: s_6
                                     width: h_6.width
                                     text: modelData.detector_no
+                                    enabled: false
                                     onEditingFinished: {
                                         sensorsModel[index].detector_no = text
                                     }
@@ -196,9 +212,36 @@ Page {
                                 MyInput {
                                     id: s_7
                                     width: h_7.width
+                                    enabled: false
                                     text: modelData.sensor_no
                                     onEditingFinished: {
                                         sensorsModel[index].sensor_no = text
+                                    }
+                                }
+
+                                MyInput {
+                                    id: s_8
+                                    width: h_8.width
+                                    text: modelData.sensor_standard
+                                    enabled: false
+                                    onEditingFinished: {
+                                        sensorsModel[index].sensor_standard = text
+                                    }
+                                }
+                                Item {
+                                    width: h_9.width
+                                    height: parent.height
+                                    Button {
+                                        anchors.centerIn: parent
+                                        text: "点击"
+                                        onClicked: {
+                                            btnIndex = index
+                                            socket.close()
+                                            socket.sampleData = undefined
+                                            socket.url = Common.fix_url(
+                                                        modelData.addr)
+                                            socket.open()
+                                        }
                                     }
                                 }
                             }
@@ -234,5 +277,27 @@ Page {
 
     Component.onCompleted: {
 
+    }
+
+    Connections {
+        target: socket
+
+        function onSettingChanged() {
+            var umd_standard = socket.settings.calibrationSensitivity
+            sensorsModel[btnIndex].sensor_standard = umd_standard.toFixed(
+                        4) + ""
+            listView.model = sensorsModel
+            // console.log("umd_standard = " + umd_standard)
+        }
+
+        function onUmdParamsChanged() {
+            var sn_sensors = socket.umdParams.sn_sensor
+            var sn_umd = socket.umdParams.sn_umd
+            sensorsModel[btnIndex].sensor_no = sn_sensors + ""
+            sensorsModel[btnIndex].detector_no = sn_umd
+            listView.model = sensorsModel
+
+            // console.log("sn_sensors = " + sn_sensors + " sn_umd = " + sn_umd)
+        }
     }
 }

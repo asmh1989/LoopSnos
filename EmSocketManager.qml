@@ -2,12 +2,15 @@ import QtQuick
 
 import EmSockets
 
+import SysSettings
+
 import "common.js" as Common
 
 Item {
     property alias url: socket.url
     property alias type: socket.type
     property alias interval: timer.interval
+    property alias settings: sysSettings
 
     property alias errorString: socket.errorString
 
@@ -23,6 +26,8 @@ Item {
 
     property bool is_open: false
 
+    property var umdParams
+
     /// 呼吸检测进行状态
     //业务层状态
     property bool inHelxa: false
@@ -30,11 +35,16 @@ Item {
     property bool exhaleStarting: false
 
     signal connectReceived(string message)
+    signal settingChanged
+    SysSettings {
+        id: sysSettings
+    }
 
     EmSocket {
         id: socket
         type: EmSocket.WebSocket
         onTextMessageReceived: function (message) {
+
             //            console.log("耗时: " + (new Date().getTime(
             //                                      ) - send_time) + " " + message)
             var obj = JSON.parse(message)
@@ -76,6 +86,21 @@ Item {
                     if (!inHelxa) {
                         start_helxa_test("")
                     }
+                } else if (obj.method === Common.METHOD_DB_QUERY) {
+                    switch (obj.ok.table) {
+                    case Common.TABLE_DEVICE_INFO:
+                    {
+                        break
+                    }
+                    case Common.TABLE_SYS_SETTINGS:
+                    {
+                        sysSettings.loadFromJson(obj.ok.data)
+                        settingChanged()
+                        break
+                    }
+                    }
+                } else if (obj.method === Common.METHOD_READ_UMD_PARAMS) {
+                    umdParams = obj.ok
                 }
             } else {
                 showToast("error msg =  " + message)
@@ -95,6 +120,8 @@ Item {
 
                 is_open = true
                 if (!sampleData) {
+                    getSysSettings()
+                    getUmdParams()
                     refresh()
                 }
             } else if (socket.status == EmSocket.Closed) {
@@ -130,7 +157,7 @@ Item {
                      }
     }
 
-    function send_json(msg) {
+    function sendJson(msg) {
         if (is_open) {
             _send_(JSON.stringify(msg))
         } else {
@@ -162,7 +189,7 @@ Item {
             if (command.length !== 0) {
                 var msg = Common.get_start_helxa_req(command)
                 appendLog("send: " + JSON.stringify(msg))
-                send_json(msg)
+                sendJson(msg)
             }
             helxa_reset()
             inHelxa = true
@@ -175,14 +202,14 @@ Item {
     function stop_helxa_test() {
         var msg = Common.get_stop_helxa_req()
         appendLog("send: " + JSON.stringify(msg))
-        send_json(msg)
+        sendJson(msg)
         helxa_reset()
         refresh_timer.start()
     }
 
     function refresh() {
         let msg = Common.get_sample_req(30)
-        send_json(msg)
+        sendJson(msg)
     }
 
     function appendLog(msg) {
@@ -195,6 +222,22 @@ Item {
 
     function close() {
         socket.close()
+    }
+
+    function getSysSettings() {
+        sendJson({
+                     "method": Common.METHOD_DB_QUERY,
+                     "args": {
+                         "table": Common.TABLE_SYS_SETTINGS,
+                         "where_clause": " id >0"
+                     }
+                 })
+    }
+
+    function getUmdParams() {
+        sendJson({
+                     "method": Common.METHOD_READ_UMD_PARAMS
+                 })
     }
 
     Component.onCompleted: {

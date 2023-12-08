@@ -6,9 +6,9 @@ import QtCharts
 import "common.js" as Common
 
 Rectangle {
-    property alias url: manager.url
-    property alias type: manager.type
-    property alias interval: manager.interval
+    property alias url: sm.url
+    property alias type: sm.type
+    property alias interval: sm.interval
     property int sensorIndex: 0
     property real umd1_x: 0
     property int umd1_min_y: 0
@@ -49,9 +49,9 @@ Rectangle {
     }
 
     function save() {
-        let obj = manager.sampleData
-        if (obj) {
-            var trace_umd1_temp = obj[Common.TRACE_UMD1_TEMP] / 100.0
+        let obj = sm.sampleData
+        if (obj && !isQc) {
+            var trace_umd1_temp = obj[Common.UMD1_TEMP] / 100.0
             var func_status = obj[Common.FUNC_STATUS]
 
             var ambient_temp = obj[Common.AMBIENT_TEMP] / 100.0
@@ -63,23 +63,28 @@ Rectangle {
             var force = arr_force.join(",") + ""
             var umd = arr_umd1.join(",") + ""
 
-            db.insertTestData(appSettings.indoor_umd, appSettings.indoor_humi,
-                              trace_umd1_temp, ambient_temp,
-                              ambient_humi, "Sno",
-                              preIndex, sensor.instrument_name,
-                              sensor.airLine_name, sensor.detector_name,
-                              airbag.airbag_no, airbag.gas_conc,
-                              resultPbb, flow_rt, force, umd,
-                              sensor.detector_no, sensor.sensor_no)
+            try {
+                db.insertTestData(
+                            appSettings.indoor_umd, appSettings.indoor_humi,
+                            trace_umd1_temp, ambient_temp, ambient_humi, "Sno",
+                            preIndex, sensor.instrument_name,
+                            sensor.airLine_name, sensor.detector_name,
+                            airbag.airbag_no, airbag.gas_conc,
+                            resultPbb, flow_rt, force, umd,
+                            sensor.detector_no, sensor.sensor_no,
+                            sensor.sensor_standard)
+            } catch (e) {
+                showToast("数据保存失败 = " + e)
+            }
         }
     }
 
     function refreshStatus() {
-        let obj = manager.sampleData
+        let obj = sm.sampleData
         let sensor_name = sensorsModel[sensorIndex].detector_name
         let d = sensor_name
         if (obj) {
-            var trace_umd1_temp = obj[Common.TRACE_UMD1_TEMP] / 100.0
+            var trace_umd1_temp = obj[Common.UMD1_TEMP] / 100.0
             var func_status = obj[Common.FUNC_STATUS]
 
             var ambient_temp = obj[Common.AMBIENT_TEMP] / 100.0
@@ -114,11 +119,13 @@ Rectangle {
     }
 
     function fix_umd2(umd1) {
+        var sensor = sensorsModel[sensorIndex]
+        var umd_standard = parseFloat(sensor.sensor_standard)
         return (umd1 / appSettings.umd_standard).toFixed(1)
     }
 
     function getResultMsg(type) {
-        var success = manager.currentStatus === Common.STATUS_END_FINISH
+        var success = sm.currentStatus === Common.STATUS_END_FINISH
         var msg = ""
 
         if (success) {
@@ -139,21 +146,34 @@ Rectangle {
                             0)
                 var av2 = sum / lastElements.length
                 var r = Math.abs(av1 - av2).toFixed(2)
-                var fix_r = fix_umd(
-                            manager.sampleData[Common.TRACE_UMD1_TEMP] / 100.0,
-                            r)
-
-                //                msg = "测试成功: 气袋浓度(" + appSettings.puppet_con + ") umd1均值差 = "
-                //                        + fix_r + "/" + fix_umd2(fix_r) + " (ppb)"
+                var fix_r = fix_umd(sm.sampleData[Common.UMD1_TEMP] / 100.0, r)
                 msg = fix_umd2(fix_r)
 
-                //                save_to_file(r, fix_r, fix_umd2(fix_r))
+                if (isQc) {
+                    var sensor = sensorsModel[sensorIndex]
+                    var qualityExpectedValue = getGasConc()
+                    var n = fix_r / qualityExpectedValue
+                    console.log("n = " + n)
+                    if (n > 2.0 && n < 6.0) {
+                        sensor.sensor_standard = n.toFixed(4) + ""
+                        // 更新校准灵敏度
+                        sm.sendJson({
+                                        "method": "update_sys_setting",
+                                        "args": {
+                                            "calibration_sensitivity": n
+                                        }
+                                    })
+                    } else {
+                        showToast(sensor.addr + " 校准失败， 校准灵敏度 = " + n, 10000)
+                    }
+                }
             } else {
                 success = false
                 msg = "帧数太少!"
+                showToast(sensor.addr + " 离线测试失败！！！", 20000)
             }
         } else {
-            msg = Common.get_status_info(manager.currentStatus)
+            msg = Common.get_status_info(sm.currentStatus)
         }
 
         if (!success) {
@@ -169,7 +189,7 @@ Rectangle {
         repeat: true
         interval: 100
         onTriggered: () => {
-                         var obj = manager.sampleData
+                         var obj = sm.sampleData
                          var func_ack = obj[Common.FUNC_ACK]
 
                          // 未准备好
@@ -178,10 +198,9 @@ Rectangle {
                          }
                          // 结束
                          if (flow_x > 1 && Common.is_helxa_finish(
-                                 manager.currentStatus)) {
-                             manager.appendLog(
-                                 "测试结束 : " + Common.get_status_info(
-                                     manager.currentStatus))
+                                 sm.currentStatus)) {
+                             sm.appendLog("测试结束 : " + Common.get_status_info(
+                                              sm.currentStatus))
                              finish()
                              return
                          }
@@ -195,7 +214,6 @@ Rectangle {
 
                          addFlowRt(obj)
                          addUmd1(obj)
-                         arr_force.push(0)
                      }
     }
 
@@ -204,9 +222,9 @@ Rectangle {
         repeat: true
         interval: 1000
         onTriggered: () => {
-                         if (!Common.is_helxa_finish(manager.currentStatus)) {
+                         if (!Common.is_helxa_finish(sm.currentStatus)) {
                              //                             console.log("refresh_timer refresh")
-                             manager.refresh()
+                             sm.refresh()
                          } else {
                              refresh_timer.stop()
                          }
@@ -215,6 +233,18 @@ Rectangle {
 
     function addFlowRt(obj) {
         var flow_rt = obj[Common.FLOW_RT] / 10.0
+
+        var press_rt = obj[Common.PRESS_RT] / 10.0
+
+        arr_force.push(press_rt)
+
+        if (sm.currentStatus === Common.STATUS_FLOW1) {
+            return
+        }
+
+        if (sm.currentStatus === Common.STATUS_FLOW2) {
+            flow_rt = press_rt
+        }
 
         arr_flow_rt.push(flow_rt)
 
@@ -373,36 +403,37 @@ Rectangle {
     }
 
     EmSocketManager {
-        id: manager
+        id: sm
     }
 
     function startSno() {
-        if (manager.is_open) {
-            manager.start_helxa_test("Sno")
+        if (sm.is_open) {
+            preTestDate = new Date()
+            sm.start_helxa_test("Sno")
         }
     }
 
     function forceStop() {
-        if (manager.is_open) {
-            manager.stop_helxa_test()
+        if (sm.is_open) {
+            sm.stop_helxa_test()
         }
     }
 
     function open() {
-        if (!manager.is_open) {
-            manager.open()
+        if (!sm.is_open) {
+            sm.open()
         }
     }
 
     function close() {
-        if (manager.is_open) {
-            manager.close()
+        if (sm.is_open) {
+            sm.close()
         }
     }
 
     function refresh() {
-        if (manager.is_open) {
-            manager.refresh()
+        if (sm.is_open) {
+            sm.refresh()
         }
     }
 
@@ -411,22 +442,22 @@ Rectangle {
             times = 0
             timer.start()
         } else {
-            manager.appendLog("已在进行离线循环测试中!")
+            sm.appendLog("已在进行离线循环测试中!")
         }
     }
     function stopLoopTest() {
         timer.stop()
         timer2.stop()
         times = 0
-        if (manager.exhaleStarting) {
-            manager.stop_helxa_test()
+        if (sm.exhaleStarting) {
+            sm.stop_helxa_test()
         }
     }
     function _start_test() {
         times += 1
         var msg = "开始循环离线测试 times = " + times
-        manager.appendLog(msg)
-        manager.start_helxa_test("Sno")
+        sm.appendLog(msg)
+        startSno()
     }
 
     Timer {
@@ -442,19 +473,18 @@ Rectangle {
             }
 
             if (times < appSettings.offline_times + 1) {
-                if (!manager.inHelxa) {
+                if (!sm.inHelxa) {
                     // 结束后
                     timer.stop()
                     if (times === appSettings.offline_times) {
                         // 次数用完, 结束任务
-                        manager.appendLog(
-                                    appSettings.offline_times + "次循环离线测试完成!")
+                        sm.appendLog(appSettings.offline_times + "次循环离线测试完成!")
                         stop_test()
                     } else {
                         // 还有次数开启延时间隔执行
                         timer2.interval = Math.max(
                                     appSettings.offline_interval, 1) * 1000
-                        manager.appendLog("延时离线循环定时器启动 .. " + timer2.interval)
+                        sm.appendLog("延时离线循环定时器启动 .. " + timer2.interval)
                         timer2.start()
                     }
                 }
@@ -474,9 +504,9 @@ Rectangle {
     }
 
     Connections {
-        target: manager
+        target: sm
         function onExhaleStartingChanged() {
-            if (manager.exhaleStarting) {
+            if (sm.exhaleStarting) {
                 start()
             } else {
                 finish()
@@ -484,7 +514,7 @@ Rectangle {
         }
 
         function onConnectReceived(msg) {
-            connectTxt.text = manager.url + " " + msg
+            connectTxt.text = sm.url + " " + msg
         }
 
         function onSampleDataChanged() {
@@ -503,9 +533,9 @@ Rectangle {
             if (msg === Common.MESSAGE_REFRESH_CONFIG) {
                 var new_url = Common.fix_url(sensorsModel[sensorIndex].addr)
                 if (new_url !== (url + "")) {
-                    manager.close()
+                    sm.close()
                     url = new_url
-                    manager.sampleData = undefined
+                    sm.sampleData = undefined
                     lines_umd1.clear()
                     chart.clear()
                 }
