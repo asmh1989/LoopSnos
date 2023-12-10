@@ -334,3 +334,27 @@ function fix_url(url) {
     }
     return addr
 }
+
+function generateArrayFromString(inputString) {
+    var resultArray = []
+    if (!inputString && inputString.length === 0) {
+        return []
+    }
+
+    var ranges = inputString.split(',')
+    for (var i = 0; i < ranges.length; ++i) {
+        var parts = ranges[i].split('-')
+        if (parts.length === 1) {
+            // Single number
+            resultArray.push(parseInt(parts[0]))
+        } else if (parts.length === 2) {
+            // Range
+            var start = parseInt(parts[0])
+            var end = parseInt(parts[1])
+            for (var j = start; j <= end; ++j) {
+                resultArray.push(j)
+            }
+        }
+    }
+    return resultArray.filter(v => !isNaN(v))
+}

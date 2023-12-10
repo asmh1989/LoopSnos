@@ -44,7 +44,7 @@ qt_add_qml_module(appLoopSnos
 #    QML_FILES AirBagPage.qml
 )
 
-configure_file(${CMAKE_SOURCE_DIR}/config/sensors.json ${CMAKE_BINARY_DIR}/config/sensors.json COPYONLY)
+# configure_file(${CMAKE_SOURCE_DIR}/config/sensors.json ${CMAKE_BINARY_DIR}/config/sensors.json COPYONLY)
 
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

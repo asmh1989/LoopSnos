@@ -86,6 +86,16 @@ ApplicationWindow {
             anchors.fill: parent
             initialItem: HomePage {}
         }
+
+        Component {
+            id: dataAnalysisPage
+            DataAnalysisPage {}
+        }
+
+        Component {
+            id: curveAnalysisPage
+            CurveAnalysisPage {}
+        }
     }
     function pop() {
         stackView.pop()
@@ -96,6 +106,9 @@ ApplicationWindow {
     }
     function openAirBagPage() {
         stackView.push("AirBagPage.qml")
+    }
+    function openDataAnalysisPage() {
+        stackView.push(dataAnalysisPage)
     }
 
     function showToast(msg, time) {

@@ -35,6 +35,14 @@ Rectangle {
             resultPbb = getResultMsg("Sno")
             chart_timer.stop()
             refreshStatus()
+            if (sm.currentStatus === Common.STATUS_END_FINISH) {
+                save()
+            }
+            if (preIndex === appSettings.job_id) {
+                appSettings.job_id += 1
+            }
+            console.log("finish sensorIndex = " + sensorIndex + " preIndex = "
+                        + preIndex + " job_id = " + appSettings.job_id)
             reset_data()
             _start_time = 0
         }
@@ -73,6 +81,7 @@ Rectangle {
                             resultPbb, flow_rt, force, umd,
                             sensor.detector_no, sensor.sensor_no,
                             sensor.sensor_standard)
+                console.log("保存成功")
             } catch (e) {
                 showToast("数据保存失败 = " + e)
             }
@@ -100,10 +109,6 @@ Rectangle {
             if (func_status === Common.STATUS_END_FINISH
                     && resultPbb.length > 0) {
                 d = d + " 测试成功" + resultPbb + "ppb"
-                save()
-                if (preIndex === appSettings.job_id) {
-                    appSettings.job_id += 1
-                }
             }
         }
 
@@ -309,6 +314,9 @@ Rectangle {
         umd1_max_y = 0
         chart_timer.start()
         preIndex = appSettings.job_id
+
+        console.log("start sensorIndex = " + sensorIndex + " preIndex = "
+                    + preIndex + " job_id = " + appSettings.job_id)
     }
 
     Item {

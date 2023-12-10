@@ -353,11 +353,18 @@ Page {
                 Button {
                     width: parent.width
                     text: "数据分析"
+                    onClicked: {
+                        openDataAnalysisPage()
+                    }
                 }
 
                 Button {
                     width: parent.width
                     text: "曲线分析"
+
+                    onClicked: {
+                        stackView.push(curveAnalysisPage)
+                    }
                 }
             }
         }

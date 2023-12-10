@@ -15,5 +15,8 @@
         <file>view/MyInput.qml</file>
         <file>Main.qml</file>
         <file>common.js</file>
+        <file>DataAnalysisPage.qml</file>
+        <file>CurveAnalysisPage.qml</file>
+        <file>view/AutoYChartView.qml</file>
     </qresource>
 </RCC>
