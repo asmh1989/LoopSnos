@@ -100,6 +100,8 @@ const MESSAGE_SOCKET_CONNECT = "__msg__socket_connect"
 const SENSORS_CONFIG_PATH = "./config/sensors.json"
 const AIRBAG_CONFIG_PATH = "./config/airbags.json"
 const MESSAGE_REFRESH_CONFIG = "__msg_refresh_label"
+const MESSAGE_ADD_LOG = "__msg_add_log"
+
 const JSON_SENSOR = {
     "addr": "",
     "airLine_name": "",
@@ -395,4 +397,13 @@ function convertToRangeString(arr) {
         }
     }
     return result
+}
+
+function formatDate3(currentDate) {
+    var hours = currentDate.getHours().toString().padStart(2, '0')
+    var minutes = currentDate.getMinutes().toString().padStart(2, '0')
+    var seconds = currentDate.getSeconds().toString().padStart(2, '0')
+
+    var formattedDate = hours + ':' + minutes + ":" + seconds + "=>"
+    return formattedDate
 }

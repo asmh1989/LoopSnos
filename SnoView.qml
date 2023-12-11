@@ -131,7 +131,7 @@ Rectangle {
 
                 if (isQc) {
                     var qualityExpectedValue = getGasConc()
-                    var n = fix_r / qualityExpectedValue
+                    var n = msg * sensor.sensor_standard / qualityExpectedValue
                     console.log("n = " + n)
                     if (n > 2.0 && n < 6.0) {
                         sensor.sensor_standard = n.toFixed(4) + ""
@@ -142,14 +142,23 @@ Rectangle {
                                             "calibration_sensitivity": n
                                         }
                                     })
+                        eventBus.sendMessage(
+                                    Common.MESSAGE_ADD_LOG,
+                                    sensor.airLine_name + "> 校准成功， 校准灵敏度 = " + n)
                     } else {
                         showToast(sensor.addr + " 校准失败， 校准灵敏度 = " + n, 10000)
+                        eventBus.sendMessage(
+                                    Common.MESSAGE_ADD_LOG,
+                                    sensor.airLine_name + "> 校准失败， 校准灵敏度 = " + n)
                     }
                 }
             } else {
                 success = false
                 msg = "帧数太少!"
                 showToast(sensor.addr + " 离线测试失败！！！", 20000)
+
+                eventBus.sendMessage(Common.MESSAGE_ADD_LOG,
+                                     "离线测试失败: 帧数太少! addr = " + sensor.addr)
             }
         } else {
             msg = Common.get_status_info(sm.currentStatus)
@@ -391,7 +400,6 @@ Rectangle {
     function startSno() {
         if (sm.is_open) {
             preTestDate = new Date()
-            openVal()
             sm.start_helxa_test("Sno")
         }
     }

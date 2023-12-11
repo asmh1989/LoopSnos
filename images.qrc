@@ -18,5 +18,6 @@
         <file>DataAnalysisPage.qml</file>
         <file>CurveAnalysisPage.qml</file>
         <file>view/AutoYChartView.qml</file>
+        <file>LoopPage.qml</file>
     </qresource>
 </RCC>

@@ -82,7 +82,8 @@ Page {
             height: parent.height
 
             Column {
-                anchors.fill: parent
+                id: col
+                width: parent.width
                 spacing: space2
                 anchors.margins: 2
 
@@ -259,6 +260,8 @@ Page {
                         text: '开始'
                         height: 40
                         onClicked: {
+                            eventBus.sendMessage(Common.MESSAGE_ADD_LOG,
+                                                 "开始离线测试")
                             bus.sendMessage("Sno")
                         }
                     }
@@ -269,6 +272,8 @@ Page {
 
                         onClicked: {
                             bus.sendMessage("ForceStop")
+                            eventBus.sendMessage(Common.MESSAGE_ADD_LOG,
+                                                 "停止离线测试")
                         }
                     }
                     Button {
@@ -276,6 +281,8 @@ Page {
                         height: 40
 
                         onClicked: {
+                            eventBus.sendMessage(Common.MESSAGE_ADD_LOG,
+                                                 "开始离线校准")
                             bus.sendMessage("Sno", true)
                         }
                     }
@@ -337,6 +344,8 @@ Page {
 
                         onClicked: {
                             bus.sendMessage("StartLoopTest")
+                            eventBus.sendMessage(Common.MESSAGE_ADD_LOG,
+                                                 "开始离线循环测试")
                         }
                     }
 
@@ -345,6 +354,8 @@ Page {
                         height: 40
                         onClicked: {
                             bus.sendMessage("StopLoopTest")
+                            eventBus.sendMessage(Common.MESSAGE_ADD_LOG,
+                                                 "停止离线循环测试")
                         }
                     }
                 }
@@ -358,12 +369,30 @@ Page {
                 }
 
                 Button {
+                    id: btn1
                     width: parent.width
                     text: "曲线分析"
 
                     onClicked: {
                         stackView.push(curveAnalysisPage)
                     }
+                }
+            }
+
+            ScrollView {
+                id: scroll
+                width: parent.width
+                anchors {
+                    top: col.bottom
+                    bottom: parent.bottom
+                }
+
+                TextArea {
+                    id: area
+                    wrapMode: Text.Wrap
+                    font.pointSize: 8
+                    font.family: "Consolas"
+                    selectByMouse: true
                 }
             }
         }
@@ -408,6 +437,28 @@ Page {
 
         function onTemperatureChanged() {
             tf_temp.text = temperature
+        }
+    }
+
+    function appendLog(msg) {
+        if (msg.length === 0) {
+            area.text = ""
+        } else {
+            var d = Common.formatDate3(new Date())
+            area.text += d
+            area.text += msg
+            area.text += "\n"
+            area.cursorPosition = area.length - 1
+        }
+    }
+
+    Connections {
+        target: eventBus
+
+        function onMessageReceived(msg, data) {
+            if (msg === Common.MESSAGE_ADD_LOG) {
+                appendLog(data)
+            }
         }
     }
 }

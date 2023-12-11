@@ -432,6 +432,11 @@ Page {
                                   v => "'" + v.text + "'"), Common.generateArrayFromString(
                                   testId.text))
 
+        if (dd.length > 10) {
+            dd = dd.slice(0, 10)
+            showToast("数据过多, 只显示前10条")
+        }
+
         refresh()
     }
 
