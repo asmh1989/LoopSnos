@@ -115,20 +115,6 @@ Rectangle {
         result.text = d
     }
 
-    function fix_umd(trace_umd1_temp, umd1) {
-        var x = trace_umd1_temp - appSettings.umd_standard_temp
-        var fix_xs = appSettings.standard_arg1 * x * x * x + appSettings.standard_arg2 * x
-                * x + appSettings.standard_arg3 * x + appSettings.standard_arg4
-
-        return (fix_xs * umd1).toFixed(2)
-    }
-
-    function fix_umd2(umd1) {
-        var sensor = sensorsModel[sensorIndex]
-        var umd_standard = parseFloat(sensor.sensor_standard)
-        return (umd1 / appSettings.umd_standard).toFixed(1)
-    }
-
     function getResultMsg(type) {
         var success = sm.currentStatus === Common.STATUS_END_FINISH
         var msg = ""
@@ -137,25 +123,13 @@ Rectangle {
             // 测试完成
             var len = arr_umd1.length
             if (len > 501) {
-                var lastElements = arr_umd1.slice(appSettings.umd_state1,
-                                                  appSettings.umd_state2)
-                var sum = lastElements.reduce(
-                            (accumulator, currentValue) => accumulator + currentValue,
-                            0)
-                var av1 = sum / lastElements.length
+                var sensor = sensorsModel[sensorIndex]
 
-                lastElements = arr_umd1.slice(appSettings.umd_state3,
-                                              appSettings.umd_state4)
-                sum = lastElements.reduce(
-                            (accumulator, currentValue) => accumulator + currentValue,
-                            0)
-                var av2 = sum / lastElements.length
-                var r = Math.abs(av1 - av2).toFixed(2)
-                var fix_r = fix_umd(sm.sampleData[Common.UMD1_TEMP] / 100.0, r)
-                msg = fix_umd2(fix_r)
+                msg = calValue(arr_umd1,
+                               sm.sampleData[Common.UMD1_TEMP] / 100.0,
+                               sensor.sensor_standard)
 
                 if (isQc) {
-                    var sensor = sensorsModel[sensorIndex]
                     var qualityExpectedValue = getGasConc()
                     var n = fix_r / qualityExpectedValue
                     console.log("n = " + n)

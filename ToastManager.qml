@@ -1,14 +1,18 @@
 import QtQuick
 
+
 /**
   * adapted from StackOverflow:
   * http://stackoverflow.com/questions/26879266/make-toast-in-android-by-qml
   * @brief Manager that creates Toasts dynamically
   */
 ListView {
+
+
     /**
       * Public
       */
+
 
     /**
       * @brief Shows a Toast
@@ -17,20 +21,23 @@ ListView {
       * @param {real} duration Duration to show in milliseconds, defaults to 3000
       */
     function show(text, duration) {
-        model.insert(0, {text: text, duration: duration});
+        model.insert(0, {
+                         "text": text,
+                         "duration": duration
+                     })
     }
+
 
     /**
       * Private
       */
-
     id: root
 
     z: Infinity
     spacing: 5
     anchors.fill: parent
-    anchors.bottomMargin: 10
-    verticalLayoutDirection: ListView.BottomToTop
+    anchors.topMargin: 48
+    verticalLayoutDirection: ListView.TopToBottom
 
     interactive: false
 
@@ -44,13 +51,14 @@ ListView {
     delegate: Toast {
         Component.onCompleted: {
             if (typeof duration === "undefined") {
-                show(text);
-            }
-            else {
-                show(text, duration);
+                show(text)
+            } else {
+                show(text, duration)
             }
         }
     }
 
-    model: ListModel {id: model}
+    model: ListModel {
+        id: model
+    }
 }

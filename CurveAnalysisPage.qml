@@ -104,6 +104,7 @@ Page {
 
                     Button {
                         text: "刷新"
+                        width: parent.width
 
                         onClicked: {
                             getData()

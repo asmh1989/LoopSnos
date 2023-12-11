@@ -358,3 +358,41 @@ function generateArrayFromString(inputString) {
     }
     return resultArray.filter(v => !isNaN(v))
 }
+
+// 计算数组的平均值
+function mean(values) {
+    return values.reduce((acc, val) => acc + val, 0) / values.length
+}
+
+// 计算样本标准差
+function stdev(values) {
+    const avg = mean(values)
+    const squaredDiffs = values.map(val => Math.pow(val - avg, 2))
+    const avgSquaredDiffs = mean(squaredDiffs)
+    const sampleStdev = Math.sqrt(avgSquaredDiffs)
+    return sampleStdev
+}
+
+function convertToRangeString(arr) {
+    // 从小到大排序
+    arr.sort((a, b) => a - b)
+
+    let result = ''
+
+    for (var i = 0; i < arr.length; i++) {
+        let startRange = arr[i]
+        let endRange = arr[i]
+
+        while (i < arr.length - 1 && arr[i + 1] - arr[i] === 1) {
+            endRange = arr[i + 1]
+            i++
+        }
+
+        result += (startRange === endRange) ? `${startRange}` : `${startRange}-${endRange}`
+
+        if (i < arr.length - 1) {
+            result += ','
+        }
+    }
+    return result
+}

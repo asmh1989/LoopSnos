@@ -30,6 +30,7 @@ ApplicationWindow {
     property var airBagsModel: []
 
     property bool isQc: false
+    property string _time_name: ""
 
     Action {
         id: navigateBackAction
@@ -49,6 +50,10 @@ ApplicationWindow {
 
     FileIO {
         id: file
+    }
+
+    function getResultPrefix() {
+        return "record_sno/" + _time_name
     }
 
     function loadJsonFile(source) {
@@ -146,6 +151,12 @@ ApplicationWindow {
         }
 
         webSocket.open()
+
+        var now = new Date()
+        var year = now.getFullYear()
+        var month = String(now.getMonth() + 1).padStart(2, '0')
+        var day = String(now.getDate()).padStart(2, '0')
+        _time_name = year + month + day
     }
 
     Component.onDestruction: {
@@ -216,6 +227,29 @@ ApplicationWindow {
         active: true
     }
 
+    function calValue(arr, td, sensor_standard) {
+        var av1 = Common.mean(arr.slice(appSettings.umd_state1,
+                                        appSettings.umd_state2))
+
+        var av2 = Common.mean(arr.slice(appSettings.umd_state3,
+                                        appSettings.umd_state4))
+        var r = Math.abs(av1 - av2).toFixed(2)
+        var fix_r = fix_umd(td, r)
+        return fix_umd2(fix_r, sensor_standard)
+    }
+
+    function fix_umd(trace_umd1_temp, umd1) {
+        var x = trace_umd1_temp - appSettings.umd_standard_temp
+        var fix_xs = appSettings.standard_arg1 * x * x * x + appSettings.standard_arg2 * x
+                * x + appSettings.standard_arg3 * x + appSettings.standard_arg4
+
+        return (fix_xs * umd1).toFixed(2)
+    }
+
+    function fix_umd2(umd1, sensor_standard) {
+        return (umd1 / sensor_standard).toFixed(1)
+    }
+
     Settings {
         id: appSettings
         fileName: "./config.txt"
@@ -233,7 +267,7 @@ ApplicationWindow {
         property int x: 0
         property int y: 0
 
-        property real umd_standard: 3.8612
+        // property real umd_standard: 3.8612
         property real umd_standard_temp: 26.7
         property real standard_arg1: 0.00004
         property real standard_arg2: 0.0009

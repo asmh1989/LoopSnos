@@ -46,6 +46,10 @@ Page {
     property int myWidth: 80
     property int myFontSize: 16
 
+    property var dd: []
+
+    property var result_header: ["仪器名称", "气路名称", "检测器名称", "气袋浓度/pbb", "ID", "平均值/ppb", "绝对误差/ppb", "相对误差/%", "标准偏差/ppb", "相对标准偏差/%"]
+
     Column {
         anchors.fill: parent
         spacing: 10
@@ -79,7 +83,46 @@ Page {
                     TextField {
                         width: parent.width
                         id: testId
-                        placeholderText: "1-3"
+                        placeholderText: "id,id1-id2"
+
+                        validator: RegularExpressionValidator {
+                            regularExpression: /^[0-9]+(-[0-9]+)?(,[0-9]+(-[0-9]+)?)*$/
+                        }
+
+                        onTextChanged: {
+                            console.log("ids = " + Common.generateArrayFromString(
+                                            text))
+                        }
+                    }
+
+                    Button {
+                        text: "刷新"
+                        width: parent.width
+
+                        onClicked: {
+                            var d = r4Arr.filter(v => v.checked)
+                            if (d.length === 0) {
+                                showToast("请选择一个气袋浓度")
+                                return
+                            }
+                            d = r3Arr.filter(v => v.checked)
+                            if (d.length === 0) {
+                                showToast("请选择一个传感器")
+                                return
+                            }
+                            d = r2Arr.filter(v => v.checked)
+                            if (d.length === 0) {
+                                showToast("请选择一个气路")
+                                return
+                            }
+                            d = r1Arr.filter(v => v.checked)
+                            if (d.length === 0) {
+                                showToast("请选择一个仪器")
+                                return
+                            }
+
+                            getData()
+                        }
                     }
                 }
             }
@@ -107,6 +150,7 @@ Page {
                         }
 
                         Repeater {
+                            id: r1R
                             model: r1Arr
                             Layout.fillWidth: true
                             delegate: Item {
@@ -118,7 +162,9 @@ Page {
                                     checked: modelData.checked
 
                                     onCheckedChanged: {
+                                        r1Arr.forEach(v => v.checked = false)
                                         r1Arr[index].checked = checked
+                                        r1R.model = r1Arr
                                     }
                                 }
                             }
@@ -137,6 +183,7 @@ Page {
                             }
                         }
                         Repeater {
+                            id: r2R
                             model: r2Arr
                             Layout.fillWidth: true
 
@@ -149,7 +196,9 @@ Page {
                                     anchors.verticalCenter: parent.verticalCenter
 
                                     onCheckedChanged: {
+                                        r2Arr.forEach(v => v.checked = false)
                                         r2Arr[index].checked = checked
+                                        r2R.model = r2Arr
                                     }
                                 }
                             }
@@ -168,6 +217,7 @@ Page {
                             }
                         }
                         Repeater {
+                            id: r3R
                             model: r3Arr
                             Layout.fillWidth: true
                             delegate: Item {
@@ -179,7 +229,9 @@ Page {
                                     anchors.verticalCenter: parent.verticalCenter
 
                                     onCheckedChanged: {
+                                        r3Arr.forEach(v => v.checked = false)
                                         r3Arr[index].checked = checked
+                                        r3R.model = r3Arr
                                     }
                                 }
                             }
@@ -198,6 +250,7 @@ Page {
                             }
                         }
                         Repeater {
+                            id: gasR
                             model: r4Arr
                             Layout.fillWidth: true
                             delegate: Item {
@@ -209,13 +262,30 @@ Page {
                                     anchors.verticalCenter: parent.verticalCenter
 
                                     onCheckedChanged: {
+                                        r4Arr.forEach(v => v.checked = false)
                                         r4Arr[index].checked = checked
+                                        gasR.model = r4Arr
                                     }
                                 }
                             }
                         }
                     }
                 }
+            }
+        }
+
+        Row {
+            width: 400
+            anchors.horizontalCenter: parent.horizontalCenter
+            Text {
+                text: "查询到的IDS:"
+                width: 160
+                font.pixelSize: 16
+                anchors.verticalCenter: parent.verticalCenter
+            }
+
+            Text {
+                id: tfIDS
             }
         }
 
@@ -299,7 +369,70 @@ Page {
             text: "保存"
             width: 160
             anchors.horizontalCenter: parent.horizontalCenter
+
+            onClicked: {
+                if (dd.length === 0) {
+                    showToast("数据为空, 请重新设置筛选条件")
+                    return
+                }
+
+                var d = dd[0]
+                var ddd = dd.map(v => parseInt(v.job_id))
+                var ids = "\"" + Common.convertToRangeString(ddd) + "\""
+
+                console.log("ids = " + ids + " " + JSON.stringify(ddd))
+
+                var new_result = [d.instrument_name, d.airLine_name, d.detector_name, d.gas_conc, ids, tfAvg.text, tfAE.text, tfRe.text, tfSD.text, tfCV.text]
+
+                var res = file.saveToCsv(getResultPrefix() + "/analysis.csv",
+                                         result_header, [new_result])
+                console.log("save = " + res)
+            }
         }
+    }
+
+    function cal(v) {
+        var umds = v.no_rt.split(",").map(vv => parseInt(vv))
+        var sensor_standard = parseFloat(v.sensor_standard)
+        var td = parseFloat(v.td)
+        return parseFloat(calValue(umds, td, sensor_standard))
+    }
+
+    function refresh() {
+        if (dd.length > 0) {
+            var c = dd.map(v => cal(v))
+            var gas = parseInt(airBagsModel.filter(
+                                   (v, index) => r4Arr[index].checked).map(
+                                   v => v.gas_conc))
+            // console.log("gas = " + gas)
+            var m = Common.mean(c)
+            var sd = Common.stdev(c)
+            tfAvg.text = m.toFixed(2)
+            tfAE.text = Math.abs(m - gas).toFixed(2)
+            tfRe.text = (Math.abs(m - gas) / m * 100.0).toFixed(0)
+            tfSD.text = sd.toFixed(2)
+            tfCV.text = (sd / m * 100.0).toFixed(0)
+        } else {
+            if (tfAvg.text.length > 0) {
+                showToast("数据为空, 请重新过滤数据")
+            }
+        }
+        var ddd = dd.map(v => parseInt(v.job_id))
+        var ids = Common.convertToRangeString(ddd)
+        tfIDS.text = ids
+    }
+
+    function getData() {
+        dd = db.queryTestData(r1Arr.filter(
+                                  v => v.checked).map(v => "'" + v.text + "'"),
+                              r2Arr.filter(v => v.checked).map(
+                                  v => "'" + v.text + "'"), r3Arr.filter(
+                                  v => v.checked).map(v => "'" + v.text + "'"),
+                              r4Arr.filter(v => v.checked).map(
+                                  v => "'" + v.text + "'"), Common.generateArrayFromString(
+                                  testId.text))
+
+        refresh()
     }
 
     Component.onCompleted: {
@@ -328,5 +461,7 @@ Page {
                                          "checked": false
                                      }
                                  })
+
+        getData()
     }
 }
