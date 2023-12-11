@@ -179,10 +179,10 @@ Page {
                     }
 
                     TextField {
-                        id: tf_umd
+                        id: tf_temp
                         placeholderText: "请输入"
                         Layout.maximumHeight: 40
-                        text: appSettings.indoor_umd
+                        text: temperature
 
                         validator: TextFieldDoubleValidator {
                             bottom: 0.01
@@ -208,12 +208,11 @@ Page {
                         id: tf_humi
                         placeholderText: "请输入"
                         Layout.maximumHeight: 40
-                        text: appSettings.indoor_humi
+                        text: humidity
 
-                        validator: TextFieldDoubleValidator {
-                            bottom: 0.01
+                        validator: IntValidator {
+                            bottom: 1
                             top: 100
-                            decimals: 0
                         }
                     }
                 }
@@ -374,7 +373,7 @@ Page {
         appSettings.offline_times = parseInt(t_times.text)
         appSettings.offline_interval = parseInt(t_interval.text)
         appSettings.indoor_humi = parseInt(tf_humi.text)
-        appSettings.indoor_umd = parseFloat(tf_umd.text)
+        appSettings.indoor_temp = parseFloat(tf_temp.text)
     }
 
     Component.onCompleted: {
@@ -401,6 +400,14 @@ Page {
         function onPreTestDateChanged() {
             time.text = "测试时间：" + Common.formatDate(preTestDate)
             refreshVal()
+        }
+
+        function onHumidityChanged() {
+            tf_humi.text = humidity
+        }
+
+        function onTemperatureChanged() {
+            tf_temp.text = temperature
         }
     }
 }

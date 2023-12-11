@@ -32,6 +32,9 @@ ApplicationWindow {
     property bool isQc: false
     property string _time_name: ""
 
+    property int humidity: appSettings.indoor_humi
+    property real temperature: appSettings.indoor_temp
+
     Action {
         id: navigateBackAction
         icon.source: "/img/back.png"
@@ -189,6 +192,8 @@ ApplicationWindow {
                                                          "method": "valve",
                                                          "args": [appSettings.val_index + 1]
                                                      }))
+
+            setTimeout(() => refreshVal(), 200)
         } else {
             webSocket.open()
         }
@@ -210,6 +215,14 @@ ApplicationWindow {
         type: EmSocket.WebSocket
         onTextMessageReceived: function (message) {
             console.log("阀门服务端 recv = " + message)
+
+            var obj = JSON.parse(message)
+            if (obj.temperature) {
+                temperature = obj.temperature
+            }
+            if (obj.humidity) {
+                humidity = obj.humidity
+            }
         }
         onStatusChanged: {
             if (webSocket.status === EmSocket.Error) {
@@ -275,9 +288,9 @@ ApplicationWindow {
         property real standard_arg4: 1
         // 阀门序号
         property int val_index: 0
-        property real indoor_umd: 25
+        property real indoor_temp: 25
         property int indoor_humi: 48
 
-        property string val_url: "ws://192.168.2.184:5533"
+        property string val_url: "ws://192.168.2.89:5533"
     }
 }

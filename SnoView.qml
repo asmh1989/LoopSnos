@@ -72,15 +72,15 @@ Rectangle {
             var umd = arr_umd1.join(",") + ""
 
             try {
-                db.insertTestData(
-                            appSettings.indoor_umd, appSettings.indoor_humi,
-                            trace_umd1_temp, ambient_temp, ambient_humi, "Sno",
-                            preIndex, sensor.instrument_name,
-                            sensor.airLine_name, sensor.detector_name,
-                            airbag.airbag_no, airbag.gas_conc,
-                            resultPbb, flow_rt, force, umd,
-                            sensor.detector_no, sensor.sensor_no,
-                            sensor.sensor_standard)
+                db.insertTestData(temperature, humidity,
+                                  trace_umd1_temp, ambient_temp,
+                                  ambient_humi, "Sno",
+                                  preIndex, sensor.instrument_name,
+                                  sensor.airLine_name, sensor.detector_name,
+                                  airbag.airbag_no, airbag.gas_conc,
+                                  resultPbb, flow_rt, force, umd,
+                                  sensor.detector_no, sensor.sensor_no,
+                                  sensor.sensor_standard)
                 console.log("保存成功")
             } catch (e) {
                 showToast("数据保存失败 = " + e)
@@ -391,6 +391,7 @@ Rectangle {
     function startSno() {
         if (sm.is_open) {
             preTestDate = new Date()
+            openVal()
             sm.start_helxa_test("Sno")
         }
     }
