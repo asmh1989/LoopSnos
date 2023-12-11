@@ -6,10 +6,9 @@ import "common.js" as Common
 import TextFieldDoubleValidator
 
 Page {
+    id: page
     readonly property int space: 6
-    property int space2: 6
-
-    property var urls: []
+    property int space2: 2
 
     EventBus {
         id: bus
@@ -38,6 +37,7 @@ Page {
                     sensorIndex: index
                     id: sno
                     url: urls[index]
+                    title: page.title
                     border {
                         width: 4
                         color: 'lightGray'
@@ -160,9 +160,12 @@ Page {
                         currentIndex: appSettings.val_index
                         Layout.maximumHeight: 40
                         onCurrentTextChanged: {
-                            appSettings.val_index = tf_fm.currentIndex
-                            eventBus.sendMessage(Common.MESSAGE_REFRESH_CONFIG)
-                            openVal()
+                            if (appSettings.val_index !== tf_fm.currentIndex) {
+                                appSettings.val_index = tf_fm.currentIndex
+                                eventBus.sendMessage(
+                                            Common.MESSAGE_REFRESH_CONFIG)
+                                openVal()
+                            }
                         }
                     }
 
@@ -362,8 +365,17 @@ Page {
 
                 Button {
                     width: parent.width
+                    text: "高级循环测试"
+                    onClicked: {
+                        stackView.push(loopPage)
+                    }
+                }
+
+                Button {
+                    width: parent.width
                     text: "数据分析"
                     onClicked: {
+                        bus.sendMessage("Close")
                         openDataAnalysisPage()
                     }
                 }
@@ -457,7 +469,9 @@ Page {
 
         function onMessageReceived(msg, data) {
             if (msg === Common.MESSAGE_ADD_LOG) {
-                appendLog(data)
+                if (stackView.currentItem.title === page.title) {
+                    appendLog(data)
+                }
             }
         }
     }

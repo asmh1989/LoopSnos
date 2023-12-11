@@ -99,8 +99,11 @@ const MESSAGE_SOCKET_CONNECT = "__msg__socket_connect"
 
 const SENSORS_CONFIG_PATH = "./config/sensors.json"
 const AIRBAG_CONFIG_PATH = "./config/airbags.json"
+const LOOP_CONFIG_PATH = "./config/loops.json"
 const MESSAGE_REFRESH_CONFIG = "__msg_refresh_label"
 const MESSAGE_ADD_LOG = "__msg_add_log"
+const MESSAGE_FINISH_ONE = "__msg_finish_one"
+const MESSAFE_SLOOP_FINISH = "__msg_small_loop_finish"
 
 const JSON_SENSOR = {
     "addr": "",

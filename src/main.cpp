@@ -106,7 +106,7 @@ int main(int argc, char *argv[]) {
   //      []() { QCoreApplication::exit(-1); }, Qt::QueuedConnection);
   //  engine.loadFromModule("LoopSnos", "Main");
 
-  const QUrl url(u"qrc:/Main.qml"_qs);
+  const QUrl url(u"qrc:/LoopSnos/Main.qml"_qs);
   QObject::connect(
       &engine, &QQmlApplicationEngine::objectCreated, &app,
       [url](QObject *obj, const QUrl &objUrl) {

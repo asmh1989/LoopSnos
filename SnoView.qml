@@ -23,6 +23,9 @@ Rectangle {
     property var arr_umd1: []
     property var arr_force: []
 
+    property bool easyUI: false
+    property alias title: sm.title
+
     // 循环测试
     property int times: 0
 
@@ -45,6 +48,8 @@ Rectangle {
                         + preIndex + " job_id = " + appSettings.job_id)
             reset_data()
             _start_time = 0
+
+            eventBus.sendMessage(Common.MESSAGE_FINISH_ONE, sensorIndex)
         }
     }
 
@@ -307,7 +312,7 @@ Rectangle {
 
         ChartView {
             width: parent.width
-            height: parent.height / 2
+            height: easyUI ? 0 : parent.height / 2
             id: char_view
             antialiasing: true
             legend.visible: false
@@ -339,7 +344,7 @@ Rectangle {
         ChartView {
             anchors.top: char_view.bottom
             width: parent.width
-            height: parent.height / 2
+            height: easyUI ? parent.height : parent.height / 2
             id: chart_umd1
             antialiasing: true
             legend.visible: false
@@ -374,6 +379,7 @@ Rectangle {
             color: 'white'
             anchors.centerIn: parent
             width: parent.width * 0.94
+            visible: !easyUI
             padding: 6
             horizontalAlignment: Qt.AlignHCenter
             verticalAlignment: Qt.AlignVCenter
@@ -429,11 +435,20 @@ Rectangle {
     }
 
     function startLoopTest() {
-        if (!timer.running) {
-            times = 0
-            timer.start()
+        if (sm.is_open) {
+            if (!timer.running) {
+                times = 0
+                timer.start()
+            } else {
+                sm.appendLog("已在进行离线循环测试中!")
+            }
         } else {
-            sm.appendLog("已在进行离线循环测试中!")
+            eventBus.sendMessage(Common.MESSAGE_SOCKET_CONNECT, {
+                                     "connected": false,
+                                     "index": sensorIndex
+                                 })
+
+            stopLoopTest()
         }
     }
     function stopLoopTest() {
@@ -470,7 +485,8 @@ Rectangle {
                     if (times === appSettings.offline_times) {
                         // 次数用完, 结束任务
                         sm.appendLog(appSettings.offline_times + "次循环离线测试完成!")
-                        stop_test()
+                        stopLoopTest()
+                        eventBus.sendMessage(Common.MESSAFE_SLOOP_FINISH)
                     } else {
                         // 还有次数开启延时间隔执行
                         timer2.interval = Math.max(

@@ -23,25 +23,31 @@ qt_add_executable(appLoopSnos
 qt_add_qml_module(appLoopSnos
     URI LoopSnos
     VERSION 1.0
-#    QML_FILES Main.qml
-#    QML_FILES common.js
-#    QML_FILES Toast.qml EventBus.qml
-#    QML_FILES ToastManager.qml
     SOURCES src/fileio.h src/fileio.cpp
     SOURCES src/qmlemsocket.h src/qmlemsocket.cpp
     SOURCES src/model.h
     SOURCES src/utils.h src/utils.cpp
-#    QML_FILES SnoView.qml
-#    QML_FILES EmSocketManager.qml
-#    QML_FILES Database.qml
-#    QML_FILES HomePage.qml
+
     RESOURCES images.qrc
     SOURCES src/TextFieldDoubleValidator.h
     SOURCES src/syssettings.h src/syssettings.cpp
-#    QML_FILES SensorsPage.qml
-#    QML_FILES view/MyInput.qml
-#    QML_FILES view/GrayLabel.qml
-#    QML_FILES AirBagPage.qml
+
+ QML_FILES AirBagPage.qml EmSocketManager.qml
+    EventBus.qml
+    HomePage.qml
+    SensorsPage.qml
+    Database.qml
+    SnoView.qml
+    Toast.qml
+    ToastManager.qml
+    view/GrayLabel.qml
+    view/MyInput.qml
+    Main.qml
+    common.js
+    DataAnalysisPage.qml
+    CurveAnalysisPage.qml
+    view/AutoYChartView.qml
+    LoopPage.qml
 )
 
 # configure_file(${CMAKE_SOURCE_DIR}/config/sensors.json ${CMAKE_BINARY_DIR}/config/sensors.json COPYONLY)

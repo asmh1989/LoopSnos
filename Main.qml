@@ -24,16 +24,20 @@ ApplicationWindow {
     Material.primary: Material.Blue
     Material.accent: Material.Blue
 
+    property var urls: []
+
     property var preTestDate
 
     property var sensorsModel: []
     property var airBagsModel: []
+    property var loopModel: []
 
     property bool isQc: false
     property string _time_name: ""
 
     property int humidity: appSettings.indoor_humi
     property real temperature: appSettings.indoor_temp
+    property int name: value
 
     Action {
         id: navigateBackAction
@@ -72,13 +76,15 @@ ApplicationWindow {
         return parseInt(airBagsModel[appSettings.val_index].gas_conc)
     }
 
-    function saveJsonFile(source, data) {
+    function saveJsonFile(source, data, no) {
         file.source = source
         file.write(JSON.stringify(data))
         console.log("save = " + JSON.stringify(data))
-        showToast("保存成功： " + source)
+        if (!no) {
+            showToast("保存成功： " + source)
+        }
         eventBus.sendMessage(Common.MESSAGE_REFRESH_CONFIG)
-        pop()
+        //        pop()
     }
 
     Flickable {
@@ -103,6 +109,11 @@ ApplicationWindow {
         Component {
             id: curveAnalysisPage
             CurveAnalysisPage {}
+        }
+
+        Component {
+            id: loopPage
+            LoopPage {}
         }
     }
     function pop() {
@@ -152,6 +163,8 @@ ApplicationWindow {
                                                  Common.JSON_SENSOR)))
             })
         }
+
+        loopModel = loadJsonFile(Common.LOOP_CONFIG_PATH)
 
         webSocket.open()
 
@@ -212,6 +225,10 @@ ApplicationWindow {
         }
     }
 
+    function appendLog(msg) {
+        eventBus.sendMessage(Common.MESSAGE_ADD_LOG, msg)
+    }
+
     EmSocket {
         id: webSocket
         url: appSettings.val_url
@@ -221,7 +238,7 @@ ApplicationWindow {
 
             var obj = JSON.parse(message)
             if (obj.temperature) {
-                temperature = obj.temperature
+                temperature = parseFloat(obj.temperature.toFixed(1))
             }
             if (obj.humidity) {
                 humidity = obj.humidity

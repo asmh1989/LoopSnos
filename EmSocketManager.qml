@@ -28,6 +28,7 @@ Item {
 
     property var umdParams
 
+    property string title: ""
     /// 呼吸检测进行状态
     //业务层状态
     property bool inHelxa: false
@@ -44,6 +45,12 @@ Item {
         id: socket
         type: EmSocket.WebSocket
         onTextMessageReceived: function (message) {
+            if (stackView.currentItem
+                    && stackView.currentItem.title !== title) {
+                console.log("stackView.currentItem.title = "
+                            + stackView.currentItem.title + " title = " + title)
+                return
+            }
 
             //            console.log("耗时: " + (new Date().getTime(
             //                                      ) - send_time) + " " + message)
@@ -214,6 +221,7 @@ Item {
 
     function appendLog(msg) {
         console.log(socket.url + " => " + msg)
+        eventBus.sendMessage(Common.MESSAGE_ADD_LOG, socket.url + "=>" + msg)
     }
 
     function open() {
