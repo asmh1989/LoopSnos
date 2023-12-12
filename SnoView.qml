@@ -1,9 +1,8 @@
 import QtQuick
 import QtQuick.Controls
 
-import QtCharts
-
 import "common.js" as Common
+import "./view"
 
 Rectangle {
     property alias url: sm.url
@@ -11,13 +10,10 @@ Rectangle {
     property alias interval: sm.interval
     property int sensorIndex: 0
     property real umd1_x: 0
-    property int umd1_min_y: 0
-    property int umd1_max_y: 0
 
     /// 用于画chart
     property int _start_time: 0
     property real flow_x: 0
-    property int flow_min_y: 0
 
     property var arr_flow_rt: []
     property var arr_umd1: []
@@ -249,19 +245,7 @@ Rectangle {
         let average = sum / len
         flow_x += chart_timer.interval / 1000
 
-        if (flow_x > valueAxisX.max) {
-            valueAxisX.max += 1
-        }
-
-        if (average > valueAxisY.max - 5) {
-            valueAxisY.max += 10
-        }
-
-        if (average < valueAxisY.min + 5) {
-            valueAxisY.min -= 10
-        }
-
-        chart.append(flow_x, average)
+        char_view.add(flow_x, average)
     }
 
     function addUmd1(obj) {
@@ -276,30 +260,13 @@ Rectangle {
         let average = sum / len
         umd1_x += chart_timer.interval / 1000
 
-        if (umd1_x > umdAxisX.max) {
-            umdAxisX.max += 1
-        }
-
-        if (umd1_min_y > average) {
-            umd1_min_y = average
-        }
-
-        if (average > umd1_max_y) {
-            umd1_max_y = average
-        }
-
-        umd1AxisY.min = Math.round(umd1_min_y - Math.abs(umd1_min_y) / 10 - 1)
-        umd1AxisY.max = Math.ceil(umd1_max_y + Math.abs(umd1_max_y) / 10 + 1)
-
-        lines_umd1.append(umd1_x, average)
+        chart_umd1.add(umd1_x, average)
     }
 
     function start() {
         result.text = ""
-        lines_umd1.clear()
-        chart.clear()
-        umd1_min_y = 100000
-        umd1_max_y = 0
+        char_view.clear()
+        chart_umd1.clear()
         chart_timer.start()
         preIndex = appSettings.job_id
 
@@ -310,68 +277,23 @@ Rectangle {
     Item {
         anchors.fill: parent
 
-        ChartView {
+        AutoYChartView {
             width: parent.width
             height: easyUI ? 0 : parent.height / 2
             id: char_view
-            antialiasing: true
-            legend.visible: false
-
-            LineSeries {
-                id: chart
-                axisX: valueAxisX
-                axisY: valueAxisY
-            }
-
-            ValuesAxis {
-                id: valueAxisX
-                min: 0
-                max: 10
-                gridVisible: false
-                labelFormat: "%.0f"
-            }
-
-            ValuesAxis {
-                id: valueAxisY
-                min: -10
-                max: 60
-                tickCount: 6
-                labelFormat: "%.0f"
-                titleText: "FLOW_RT (ml/s)"
-            }
+            rightYVisible: false
+            titleText: "FLOW_RT (ml/s)"
         }
 
-        ChartView {
+        AutoYChartView {
             anchors.top: char_view.bottom
             width: parent.width
             height: easyUI ? parent.height : parent.height / 2
             id: chart_umd1
-            antialiasing: true
-            legend.visible: false
-
-            LineSeries {
-                id: lines_umd1
-                axisX: umdAxisX
-                axisY: umd1AxisY
-            }
-
-            ValuesAxis {
-                id: umdAxisX
-                min: 0
-                max: 10
-                gridVisible: false
-                labelFormat: "%.0f"
-            }
-
-            ValuesAxis {
-                id: umd1AxisY
-                min: -10
-                max: 60
-                tickCount: 6
-                labelFormat: "%.0f"
-                titleText: "UMD1 (pbb)"
-            }
+            rightYVisible: false
+            titleText: "UMD1 (pbb)"
         }
+
         Label {
             text: ""
             id: result

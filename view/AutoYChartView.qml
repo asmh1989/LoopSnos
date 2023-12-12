@@ -50,11 +50,15 @@ Item {
     function clear() {
         chart.clear()
         chart2.clear()
+        resetXY()
+    }
 
+    function resetXY() {
         min_y = 8000000
         max_y = -8000000
         min_y2 = 8000000
         max_y2 = -800000
+        umdAxisX.max = 60
     }
 
     function createSeries(id) {
@@ -64,6 +68,7 @@ Item {
 
     function removeAllSeries() {
         chartView.removeAllSeries()
+        resetXY()
     }
 
     ChartView {
