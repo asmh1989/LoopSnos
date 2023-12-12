@@ -204,10 +204,10 @@ ApplicationWindow {
         if (webSocket.status === EmSocket.Open) {
             eventBus.sendMessage(Common.MESSAGE_ADD_LOG,
                                  "打开阀门 = " + (appSettings.val_index + 1))
-            // webSocket.sendTextMessage(JSON.stringify({
-            //                                              "method": "valve",
-            //                                              "args": [appSettings.val_index + 1]
-            //                                          }))
+            webSocket.sendTextMessage(JSON.stringify({
+                                                         "method": "valve",
+                                                         "args": [appSettings.val_index + 1]
+                                                     }))
             setTimeout(() => refreshVal(), 200)
         } else {
             webSocket.open()
