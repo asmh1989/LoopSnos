@@ -282,6 +282,7 @@ Rectangle {
             height: easyUI ? 0 : parent.height / 2
             id: char_view
             rightYVisible: false
+            legendVisible: false
             titleText: "FLOW_RT (ml/s)"
         }
 
@@ -291,6 +292,7 @@ Rectangle {
             height: easyUI ? parent.height : parent.height / 2
             id: chart_umd1
             rightYVisible: false
+            legendVisible: false
             titleText: "UMD1 (pbb)"
         }
 

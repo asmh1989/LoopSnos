@@ -9,6 +9,7 @@ Item {
 
     property alias rightYVisible: chart2.visible
     property alias titleText: umd1AxisY.titleText
+    property alias legendVisible: chartView.legend.visible
 
     function add(pX, average, id) {
         if (pX > umdAxisX.max) {
