@@ -353,7 +353,7 @@ Page {
             width: 400
             anchors.horizontalCenter: parent.horizontalCenter
             Text {
-                text: "相对标准偏差CW(%):"
+                text: "相对标准偏差CV(%):"
                 width: 160
                 font.pixelSize: myFontSize
                 anchors.verticalCenter: parent.verticalCenter
