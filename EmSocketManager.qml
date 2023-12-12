@@ -113,6 +113,9 @@ Item {
         }
 
         onStatusChanged: {
+            if (socket.url.toString().length < 10) {
+                return
+            }
             if (socket.status == EmSocket.Error) {
                 if (socket.errorString.length > 0) {
                     appendLog("Error: " + socket.errorString)
