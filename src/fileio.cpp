@@ -59,7 +59,11 @@ bool FileIO::write(const QString &data) {
   if (mSource.isEmpty()) return false;
 
   QFile file(mSource);
-
+  QFileInfo fileInfo(file);
+  QDir dir(fileInfo.dir().absolutePath());
+  if (!dir.exists()) {
+    dir.mkpath(".");
+  }
   //"append" allows adding a new line instead of rewriting the file
   if (!file.open(QFile::WriteOnly | QIODevice::Text)) return false;
 

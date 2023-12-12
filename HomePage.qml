@@ -15,6 +15,7 @@ Page {
     }
     padding: space
     title: "home"
+    property var urls: []
 
     Row {
         anchors.fill: parent

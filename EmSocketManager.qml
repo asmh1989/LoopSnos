@@ -47,8 +47,6 @@ Item {
         onTextMessageReceived: function (message) {
             if (stackView.currentItem
                     && stackView.currentItem.title !== title) {
-                console.log("stackView.currentItem.title = "
-                            + stackView.currentItem.title + " title = " + title)
                 return
             }
 

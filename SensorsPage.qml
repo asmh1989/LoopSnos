@@ -239,7 +239,7 @@ Page {
                                             socket.close()
                                             socket.sampleData = undefined
                                             socket.url = Common.fix_url(
-                                                        modelData.addr)
+                                                        sensorsModel[index].addr)
                                             socket.open()
                                         }
                                     }
@@ -266,6 +266,7 @@ Page {
                         text: "保存"
 
                         onClicked: {
+
                             saveJsonFile(Common.SENSORS_CONFIG_PATH,
                                          sensorsModel)
                         }

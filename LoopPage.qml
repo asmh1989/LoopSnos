@@ -52,6 +52,8 @@ Page {
 
     property var cacheData: []
 
+    property var urls: []
+
     function start() {
         if (loopModel.length === 0) {
             showToast("请先添加任务")
@@ -184,6 +186,12 @@ Page {
                         anchors.verticalCenter: parent.verticalCenter
 
                         onClicked: {
+                            if (tf1.text.length === 0 || tf2.text.length === 0
+                                    || tf3.text.length === 0) {
+                                showToast("请输入完整")
+                                return
+                            }
+
                             var d = Common.generateArrayFromString(
                                         tf1.text).filter(v => v < 9)
                             var fms = Common.convertToRangeString(d)
@@ -556,5 +564,13 @@ Page {
                 }
             }
         }
+    }
+
+    Component.onCompleted: {
+
+        sensorsModel.forEach(function (element) {
+            urls.push(Common.fix_url(element.addr))
+        })
+        grid.model = urls
     }
 }

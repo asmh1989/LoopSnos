@@ -24,8 +24,6 @@ ApplicationWindow {
     Material.primary: Material.Blue
     Material.accent: Material.Blue
 
-    property var urls: []
-
     property var preTestDate
 
     property var sensorsModel: []
@@ -84,7 +82,9 @@ ApplicationWindow {
             showToast("保存成功： " + source)
         }
         eventBus.sendMessage(Common.MESSAGE_REFRESH_CONFIG)
-        //        pop()
+        if (!no) {
+            pop()
+        }
     }
 
     Flickable {
