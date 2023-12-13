@@ -359,6 +359,7 @@ Rectangle {
     }
 
     function startLoopTest() {
+        isQc = false
         if (sm.is_open) {
             if (!timer.running) {
                 times = 0
