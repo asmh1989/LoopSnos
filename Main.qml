@@ -35,7 +35,6 @@ ApplicationWindow {
 
     property int humidity: appSettings.indoor_humi
     property real temperature: appSettings.indoor_temp
-    property int name: value
 
     Action {
         id: navigateBackAction

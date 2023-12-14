@@ -62,7 +62,6 @@ Page {
                             } else if (message === "Open") {
                                 sno.open()
                             } else if (message === "StartLoopTest") {
-                                setTestTime()
                                 sno.startLoopTest()
                             } else if (message === "StopLoopTest") {
                                 sno.stopLoopTest()
