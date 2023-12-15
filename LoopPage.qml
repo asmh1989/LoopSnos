@@ -54,6 +54,8 @@ Page {
 
     property var urls: []
 
+    property int waiting: 0
+
     function start() {
         if (loopModel.length === 0) {
             showToast("请先添加任务")
@@ -89,6 +91,7 @@ Page {
     }
 
     function stop() {
+        waiting = 0
         running = false
         cacheData = []
         curIndex = 0
@@ -96,11 +99,26 @@ Page {
         bus.sendMessage("StopLoopTest")
         timer.stop()
         eventBus.sendMessage(Common.MESSAGE_ADD_LOG, "高级离线循环测试完成")
-
-        ttIndex.text = curIndex
-        ttFm.text = curFmIndex
         cacheData = []
-        ttStatus.text = cacheData.join(",")
+
+        refresh()
+    }
+
+    function refresh() {
+        ww.visible = waiting > 0
+        if (waiting > 0) {
+            ww.text = "等待中 ... " + waiting
+            waiting -= 1
+            if (waiting === 0) {
+                setTimeout(function () {
+                    realStart()
+                }, 1000)
+            }
+        } else {
+            ttIndex.text = curIndex + 1
+            ttFm.text = curFm
+            ttStatus.text = cacheData.join(",")
+        }
     }
 
     // padding: 20
@@ -138,6 +156,7 @@ Page {
                     TextField {
                         id: tf1
                         height: parent.height
+                        width: parent.height * 2.5
                         validator: RegularExpressionValidator {
                             regularExpression: /^[0-9]+(-[0-9]+)?(,[0-9]+(-[0-9]+)?)*$/
                         }
@@ -155,7 +174,7 @@ Page {
                     TextField {
                         id: tf2
                         height: parent.height
-                        width: parent.height * 2
+                        width: parent.height * 1.5
                         validator: IntValidator {
                             bottom: 1
                             top: 100
@@ -169,17 +188,28 @@ Page {
                     TextField {
                         id: tf3
                         height: parent.height
-                        width: parent.height * 2
+                        width: parent.height * 1.5
                         validator: IntValidator {
                             bottom: 1
                             top: 100
                         }
                     }
-
-                    Item {
-                        height: parent.height
-                        width: parent.height
+                    Text {
+                        text: "完成等待(S):"
+                        anchors.verticalCenter: parent.verticalCenter
                     }
+
+                    TextField {
+                        id: tf4
+                        height: parent.height
+                        width: parent.height * 2
+                        text: 0 + ""
+                        validator: IntValidator {
+                            bottom: 0
+                            top: 100000
+                        }
+                    }
+
                     Button {
                         height: parent.height * 1.2
                         text: "新增"
@@ -199,11 +229,13 @@ Page {
 
                             var count = parseInt(tf2.text)
                             var delay = parseInt(tf3.text)
+                            var waiting = parseInt(tf4.text)
 
                             loopModel.push({
                                                "fm": fms,
                                                "count": count,
-                                               "delay": delay
+                                               "delay": delay,
+                                               "waiting": waiting
                                            })
 
                             saveJsonFile(Common.LOOP_CONFIG_PATH,
@@ -237,7 +269,7 @@ Page {
                             Row {
                                 anchors.fill: parent
                                 Item {
-                                    width: parent.width / 5
+                                    width: parent.width / 6
                                     height: parent.height
 
                                     Text {
@@ -248,7 +280,7 @@ Page {
                                 }
 
                                 Item {
-                                    width: parent.width / 5
+                                    width: parent.width / 6
                                     height: parent.height
 
                                     Text {
@@ -260,7 +292,7 @@ Page {
                                 }
 
                                 Item {
-                                    width: parent.width / 5
+                                    width: parent.width / 6
                                     height: parent.height
 
                                     Text {
@@ -271,7 +303,7 @@ Page {
                                     }
                                 }
                                 Item {
-                                    width: parent.width / 5
+                                    width: parent.width / 6
                                     height: parent.height
 
                                     Text {
@@ -281,8 +313,20 @@ Page {
                                         anchors.centerIn: parent
                                     }
                                 }
+
                                 Item {
-                                    width: parent.width / 5
+                                    width: parent.width / 6
+                                    height: parent.height
+
+                                    Text {
+                                        text: "完成等待"
+                                        color: 'white'
+
+                                        anchors.centerIn: parent
+                                    }
+                                }
+                                Item {
+                                    width: parent.width / 6
                                     height: parent.height
 
                                     Text {
@@ -302,7 +346,7 @@ Page {
                             Row {
                                 anchors.fill: parent
                                 Item {
-                                    width: parent.width / 5
+                                    width: parent.width / 6
                                     height: parent.height
 
                                     Text {
@@ -312,7 +356,7 @@ Page {
                                 }
 
                                 Item {
-                                    width: parent.width / 5
+                                    width: parent.width / 6
                                     height: parent.height
 
                                     Text {
@@ -322,7 +366,7 @@ Page {
                                 }
 
                                 Item {
-                                    width: parent.width / 5
+                                    width: parent.width / 6
                                     height: parent.height
 
                                     Text {
@@ -331,7 +375,7 @@ Page {
                                     }
                                 }
                                 Item {
-                                    width: parent.width / 5
+                                    width: parent.width / 6
                                     height: parent.height
 
                                     Text {
@@ -339,8 +383,19 @@ Page {
                                         anchors.centerIn: parent
                                     }
                                 }
+
                                 Item {
-                                    width: parent.width / 5
+                                    width: parent.width / 6
+                                    height: parent.height
+
+                                    Text {
+                                        text: modelData.waiting + ""
+                                        anchors.centerIn: parent
+                                    }
+                                }
+
+                                Item {
+                                    width: parent.width / 6
                                     height: parent.height
 
                                     Button {
@@ -416,6 +471,7 @@ Page {
             height: 60
             anchors.horizontalCenter: parent.horizontalCenter
             spacing: 10
+            visible: true
             Item {
                 width: 60
                 height: 60
@@ -458,6 +514,12 @@ Page {
 
             Text {
                 id: ttStatus
+                font.pixelSize: 20
+                anchors.verticalCenter: parent.verticalCenter
+            }
+
+            Text {
+                id: ww
                 font.pixelSize: 20
                 anchors.verticalCenter: parent.verticalCenter
             }
@@ -510,9 +572,7 @@ Page {
         repeat: true
         interval: 1000
         onTriggered: {
-            ttIndex.text = curIndex + 1
-            ttFm.text = curFm
-            ttStatus.text = cacheData.join(",")
+            refresh()
         }
     }
 
@@ -554,13 +614,20 @@ Page {
                             stop()
                             return
                         } else {
+                            appendLog("序列号 = " + curIndex + " 已完成")
+                            waiting = m.waiting
+
                             curIndex += 1
                             curFmIndex = 0
                         }
                     } else {
                         curFmIndex += 1
                     }
-                    realStart()
+                    if (waiting === 0) {
+                        realStart()
+                    } else {
+                        appendLog("开始完成等待...")
+                    }
                 }
             }
         }

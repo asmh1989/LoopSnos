@@ -164,6 +164,9 @@ ApplicationWindow {
         }
 
         loopModel = loadJsonFile(Common.LOOP_CONFIG_PATH)
+        loopModel = loopModel.map(v => Object.assign({
+                                                         "waiting": 0
+                                                     }, v))
 
         webSocket.open()
 
