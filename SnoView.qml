@@ -40,7 +40,11 @@ Rectangle {
             chart_timer.stop()
             refreshStatus()
             if (sm.currentStatus === Common.STATUS_END_FINISH) {
-                save()
+                try {
+                    save()
+                } catch (e) {
+                    console.log("数据库存储失败")
+                }
             }
             if (preIndex === appSettings.job_id) {
                 appSettings.job_id += 1
@@ -255,14 +259,16 @@ Rectangle {
     }
 
     function start() {
-        result.text = ""
-        char_view.clear()
-        chart_umd1.clear()
-        chart_timer.start()
-        preIndex = appSettings.job_id
+        if (!chart_timer.running) {
+            result.text = ""
+            char_view.clear()
+            chart_umd1.clear()
+            chart_timer.start()
+            preIndex = appSettings.job_id
 
-        console.log("start sensorIndex = " + sensorIndex + " preIndex = "
-                    + preIndex + " job_id = " + appSettings.job_id)
+            console.log("start sensorIndex = " + sensorIndex + " preIndex = "
+                        + preIndex + " job_id = " + appSettings.job_id)
+        }
     }
 
     Item {
@@ -322,6 +328,10 @@ Rectangle {
         if (sm.is_open) {
             preTestDate = new Date()
             sm.start_helxa_test("Sno")
+
+            setTimeout(function () {
+                start()
+            }, 1000)
         }
     }
 
