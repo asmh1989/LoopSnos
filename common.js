@@ -318,13 +318,13 @@ function formatDate2(currentDate) {
     return formattedDate
 }
 
-function umd_avg(state1, state2, state3, state4, arr_umd1) {
-    var lastElements = arr_umd1.slice(state1, state2)
+function umd_avg(state1, state2, state3, state4, umd1) {
+    var lastElements = umd1.slice(state1, state2)
     var sum = lastElements.reduce(
                 (accumulator, currentValue) => accumulator + currentValue, 0)
     var av1 = sum / lastElements.length
 
-    lastElements = arr_umd1.slice(state3, state4)
+    lastElements = umd1.slice(state3, state4)
     sum = lastElements.reduce(
                 (accumulator, currentValue) => accumulator + currentValue, 0)
     var av2 = sum / lastElements.length

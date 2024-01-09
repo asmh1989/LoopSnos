@@ -238,9 +238,17 @@ void QmlEmSocket::setSocket(QWebSocket *socket) {
     connect(m_webSocket.data(), &QWebSocket::textMessageReceived, this,
             &QmlEmSocket::textMessageReceived);
     typedef void (QWebSocket::*ErrorSignal)(QAbstractSocket::SocketError);
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 5, 0))
     connect(m_webSocket.data(),
-            static_cast<ErrorSignal>(&QWebSocket::errorOccurred), this,
+                static_cast<ErrorSignal>(&QWebSocket::errorOccurred), this,
+                &QmlEmSocket::onError);
+
+#else
+    connect(m_webSocket.data(),
+            static_cast<ErrorSignal>(&QWebSocket::error), this,
             &QmlEmSocket::onError);
+#endif
+
     connect(m_webSocket.data(), &QWebSocket::stateChanged, this,
             &QmlEmSocket::onStateChanged);
   }

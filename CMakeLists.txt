@@ -6,7 +6,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 6.3 REQUIRED COMPONENTS  Charts Quick QuickControls2 WebSockets SerialPort)
+find_package(Qt6 6.2 REQUIRED COMPONENTS  Charts Quick QuickControls2 WebSockets SerialPort)
 
 add_subdirectory(Qt-AES)
 

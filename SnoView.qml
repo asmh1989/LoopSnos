@@ -31,7 +31,12 @@ Rectangle {
 
     function finish() {
         if (chart_timer.running) {
-            resultPbb = getResultMsg("Sno")
+            try {
+                resultPbb = getResultMsg("Sno")
+            } catch (e) {
+                console.log("计算结果出现异常 arr_umd1.len = " + arr_umd1.length)
+            }
+
             chart_timer.stop()
             refreshStatus()
             if (sm.currentStatus === Common.STATUS_END_FINISH) {
@@ -123,43 +128,35 @@ Rectangle {
         if (success) {
             // 测试完成
             var len = arr_umd1.length
-            if (len > 501) {
-                var sensor = sensorsModel[sensorIndex]
 
-                msg = calValue(arr_umd1,
-                               sm.sampleData[Common.UMD1_TEMP] / 100.0,
-                               sensor.sensor_standard)
+            var sensor = sensorsModel[sensorIndex]
 
-                if (isQc) {
-                    var qualityExpectedValue = getGasConc()
-                    var n = msg * sensor.sensor_standard / qualityExpectedValue
-                    console.log("n = " + n)
-                    if (n > 2.0 && n < 6.0) {
-                        sensor.sensor_standard = n.toFixed(4) + ""
-                        // 更新校准灵敏度
-                        sm.sendJson({
-                                        "method": "update_sys_setting",
-                                        "args": {
-                                            "calibration_sensitivity": n
-                                        }
-                                    })
-                        eventBus.sendMessage(
-                                    Common.MESSAGE_ADD_LOG,
-                                    sensor.airLine_name + "> 校准成功， 校准灵敏度 = " + n)
-                    } else {
-                        showToast(sensor.addr + " 校准失败， 校准灵敏度 = " + n, 10000)
-                        eventBus.sendMessage(
-                                    Common.MESSAGE_ADD_LOG,
-                                    sensor.airLine_name + "> 校准失败， 校准灵敏度 = " + n)
-                    }
+            msg = calValue(arr_umd1, sm.sampleData[Common.UMD1_TEMP] / 100.0,
+                           sensor.sensor_standard)
+
+            if (isQc) {
+                var qualityExpectedValue = getGasConc()
+                var n = msg * sensor.sensor_standard / qualityExpectedValue
+                console.log("n = " + n)
+                if (n > 2.0 && n < 6.0) {
+                    sensor.sensor_standard = n.toFixed(4) + ""
+                    saveJsonFile(Common.SENSORS_CONFIG_PATH, sensorsModel)
+                    // 更新校准灵敏度
+                    sm.sendJson({
+                                    "method": "update_sys_setting",
+                                    "args": {
+                                        "calibration_sensitivity": n
+                                    }
+                                })
+                    eventBus.sendMessage(
+                                Common.MESSAGE_ADD_LOG,
+                                sensor.airLine_name + "> 校准成功， 校准灵敏度 = " + n)
+                } else {
+                    showToast(sensor.addr + " 校准失败， 校准灵敏度 = " + n, 10000)
+                    eventBus.sendMessage(
+                                Common.MESSAGE_ADD_LOG,
+                                sensor.airLine_name + "> 校准失败， 校准灵敏度 = " + n)
                 }
-            } else {
-                success = false
-                msg = "帧数太少!"
-                showToast(sensor.addr + " 离线测试失败！！！", 20000)
-
-                eventBus.sendMessage(Common.MESSAGE_ADD_LOG,
-                                     "离线测试失败: 帧数太少! addr = " + sensor.addr)
             }
         } else {
             msg = Common.get_status_info(sm.currentStatus)
@@ -251,13 +248,7 @@ Rectangle {
     function addUmd1(obj) {
         var trace_umd1 = obj[Common.TRACE_UMD1]
         arr_umd1.push(trace_umd1)
-
-        var nums = chart_timer.interval / 100
-        var len = Math.min(arr_umd1.length, nums)
-        let lastElements = arr_umd1.slice(-len)
-        let sum = lastElements.reduce(
-                (accumulator, currentValue) => accumulator + currentValue, 0)
-        let average = sum / len
+        let average = trace_umd1
         umd1_x += chart_timer.interval / 1000
 
         chart_umd1.add(umd1_x, average)
