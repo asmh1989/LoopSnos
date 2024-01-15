@@ -407,11 +407,11 @@ Page {
             // console.log("gas = " + gas)
             var m = Common.mean(c)
             var sd = Common.stdev(c)
-            tfAvg.text = m.toFixed(2)
-            tfAE.text = Math.abs(m - gas).toFixed(2)
-            tfRe.text = (Math.abs(m - gas) / m * 100.0).toFixed(0)
-            tfSD.text = sd.toFixed(2)
-            tfCV.text = (sd / m * 100.0).toFixed(0)
+            tfAvg.text = m.toFixed(1)
+            tfAE.text = Math.abs(m - gas).toFixed(1)
+            tfRe.text = (Math.abs(m - gas) / m * 100.0).toFixed(1) + "%"
+            tfSD.text = sd.toFixed(1)
+            tfCV.text = (sd / m * 100.0).toFixed(1) + "%"
         } else {
             if (tfAvg.text.length > 0) {
                 showToast("数据为空, 请重新过滤数据")
