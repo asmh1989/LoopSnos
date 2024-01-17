@@ -56,6 +56,8 @@ Page {
 
     property int waiting: 0
 
+    property int changeTime: 0
+
     function start() {
         if (loopModel.length === 0) {
             showToast("请先添加任务")
@@ -573,10 +575,31 @@ Page {
         interval: 1000
         onTriggered: {
             refresh()
+            changeTime += 1
+
+            if (changeTime > 100) {
+                console.log("长时间没反应, 主动检查完成情况, curIndex = " + curIndex
+                            + " curFmIndex = " + curFmIndex)
+                loopFinishCheck()
+            } else if (changeTime > 160) {
+                changeTime = 0
+                if (curIndex + 1 === loopModel.length) {
+                    stop()
+                    return
+                } else {
+                    appendLog("序列号 = " + curIndex + " 已完成")
+                    waiting = m.waiting
+
+                    curIndex += 1
+                    curFmIndex = 0
+                    realStart()
+                }
+            }
         }
     }
 
     function appendLog(msg) {
+        console.log(msg)
         if (msg.length === 0) {
             area.text = ""
         } else {
@@ -588,50 +611,56 @@ Page {
         }
     }
 
+    function loopFinishCheck() {
+        if (!running) {
+            return
+        }
+
+        var has = cacheData.filter(v => v !== 0)
+        if (has.length === 0) {
+            var m = loopModel[curIndex]
+            var dd = Common.generateArrayFromString(m.fm)
+            if (curFmIndex + 1 === dd.length) {
+                if (curIndex + 1 === loopModel.length) {
+                    stop()
+                    return
+                } else {
+                    appendLog("序列号 = " + curIndex + " 已完成")
+                    waiting = m.waiting
+
+                    curIndex += 1
+                    curFmIndex = 0
+                }
+            } else {
+                curFmIndex += 1
+                appendLog("curIndex = " + curIndex + " curFmIndex = " + curFmIndex)
+            }
+            if (waiting === 0) {
+                realStart()
+            } else {
+                appendLog("开始完成等待...")
+            }
+        }
+    }
+
     Connections {
         target: eventBus
 
         function onMessageReceived(msg, data) {
+            changeTime = 0
+
             if (msg === Common.MESSAGE_ADD_LOG) {
                 appendLog(data)
             } else if (msg === Common.MESSAGE_FINISH_ONE) {
-                cacheData[data] -= 1
-                if (cacheData[data] < 0) {
-                    cacheData[data] = 0
+                if (cacheData[data] > 0) {
+                    cacheData[data] -= 1
                 }
             } else if (msg === Common.MESSAGE_SOCKET_CONNECT) {
                 if (!data.connected) {
                     cacheData[data.index] = 0
                 }
             } else if (msg === Common.MESSAFE_SLOOP_FINISH) {
-                if (!running) {
-                    return
-                }
-
-                var has = cacheData.filter(v => v !== 0)
-                if (has.length === 0) {
-                    var m = loopModel[curIndex]
-                    var dd = Common.generateArrayFromString(m.fm)
-                    if (curFmIndex + 1 === dd.length) {
-                        if (curIndex + 1 === loopModel.length) {
-                            stop()
-                            return
-                        } else {
-                            appendLog("序列号 = " + curIndex + " 已完成")
-                            waiting = m.waiting
-
-                            curIndex += 1
-                            curFmIndex = 0
-                        }
-                    } else {
-                        curFmIndex += 1
-                    }
-                    if (waiting === 0) {
-                        realStart()
-                    } else {
-                        appendLog("开始完成等待...")
-                    }
-                }
+                loopFinishCheck()
             }
         }
     }

@@ -223,7 +223,7 @@ Item {
     }
 
     function appendLog(msg) {
-        console.log(socket.url + " => " + msg)
+        // console.log(socket.url + " => " + msg)
         eventBus.sendMessage(Common.MESSAGE_ADD_LOG, socket.url + "=>" + msg)
     }
 
