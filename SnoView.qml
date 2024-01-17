@@ -30,7 +30,7 @@ Rectangle {
     property int preIndex: appSettings.job_id
 
     function finish() {
-        if (chart_timer.running) {
+        if (chart_timer.running && arr_umd1.length > 200) {
             try {
                 resultPbb = getResultMsg("Sno")
             } catch (e) {
@@ -55,6 +55,8 @@ Rectangle {
             _start_time = 0
 
             eventBus.sendMessage(Common.MESSAGE_FINISH_ONE, sensorIndex)
+        } else {
+            console.log("异常finish， 忽略")
         }
     }
 
@@ -180,14 +182,8 @@ Rectangle {
         interval: 100
         onTriggered: () => {
                          var obj = sm.sampleData
-                         var func_ack = obj[Common.FUNC_ACK]
-
-                         // 未准备好
-                         if (func_ack === 0 && flow_x === 0) {
-                             return
-                         }
                          // 结束
-                         if (flow_x > 1 && Common.is_helxa_finish(
+                         if (flow_x > 10 && Common.is_helxa_finish(
                                  sm.currentStatus)) {
                              sm.appendLog("测试结束 : " + Common.get_status_info(
                                               sm.currentStatus))
@@ -330,8 +326,14 @@ Rectangle {
             sm.start_helxa_test("Sno")
 
             setTimeout(function () {
-                start()
-            }, 1000)
+                if (!chart_timer.running) {
+                    console.log("超时， 未收到服务端启动命令， 重启Sno")
+                    forceStop()
+                    setTimeout(function () {
+                        startSno()
+                    }, 2000)
+                }
+            }, 6000)
         }
     }
 
@@ -442,7 +444,8 @@ Rectangle {
             if (sm.exhaleStarting) {
                 start()
             } else {
-                finish()
+                console.log("sm.exhaleStarting = " + sm.exhaleStarting)
+                // finish()
             }
         }
 

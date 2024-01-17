@@ -264,7 +264,7 @@ Page {
                         header: Rectangle {
                             color: Material.primary
                             height: 30
-                            width: parent.width
+                            width: listView.width
 
                             Row {
                                 anchors.fill: parent
@@ -341,7 +341,7 @@ Page {
                         model: loopModel
                         delegate: Item {
                             height: 30
-                            width: parent.width
+                            width: listView.width
 
                             Row {
                                 anchors.fill: parent
@@ -596,6 +596,9 @@ Page {
                 appendLog(data)
             } else if (msg === Common.MESSAGE_FINISH_ONE) {
                 cacheData[data] -= 1
+                if (cacheData[data] < 0) {
+                    cacheData[data] = 0
+                }
             } else if (msg === Common.MESSAGE_SOCKET_CONNECT) {
                 if (!data.connected) {
                     cacheData[data.index] = 0
