@@ -28,12 +28,22 @@ Item {
 
     property var umdParams
 
+    // 回调缓存
+    property var cb
+    // 回调key
+    property int cbIndex: 0
+
     property string title: ""
     /// 呼吸检测进行状态
     //业务层状态
     property bool inHelxa: false
     //服务端状态
     property bool exhaleStarting: false
+    property int serverJobId: 0
+
+    property var arr_flow_rt: []
+    property var arr_umd1: []
+    property var arr_force: []
 
     signal connectReceived(string message)
     signal settingChanged
@@ -53,6 +63,17 @@ Item {
             //            console.log("耗时: " + (new Date().getTime(
             //                                      ) - send_time) + " " + message)
             var obj = JSON.parse(message)
+
+            // 回调
+            if (obj.id) {
+                var fn = cb[obj.id]
+                if (fn) {
+                    fn(obj.res)
+                    delete cb[obj.id]
+                }
+                obj = obj.res
+            }
+
             if (obj.method === "test") {
                 socket.notifyTestOk()
                 return
@@ -83,6 +104,14 @@ Item {
                     sampleData = obj.ok
 
                     currentStatus = sampleData[Common.FUNC_STATUS]
+                    if (!Common.is_helxa_finish(currentStatus)) {
+                        var flow_rt = sampleData[Common.FLOW_RT] / 10.0
+                        var press_rt = sampleData[Common.PRESS_RT] / 10.0
+                        var trace_umd1 = sampleData[Common.TRACE_UMD1]
+                        arr_umd1.push(trace_umd1)
+                        arr_flow_rt.push(flow_rt)
+                        arr_force.push(press_rt)
+                    }
 
                     if (inHelxa && update_count > 10 && Common.is_helxa_finish(
                                 currentStatus)) {
@@ -92,6 +121,11 @@ Item {
                            && socket.type === EmSocket.WebSocket) {
                     if (!inHelxa) {
                         start_helxa_test("")
+                    } else {
+                        if (obj.ok && obj.ok.id) {
+                            serverJobId = obj.ok.id
+                            console.log("recv jobId = " + serverJobId)
+                        }
                     }
                 } else if (obj.method === Common.METHOD_DB_QUERY) {
                     switch (obj.ok.table) {
@@ -163,17 +197,8 @@ Item {
                          }
 
                          read_times += 1
-                         _send_(_sample_value)
+                         // _send_(_sample_value)
                      }
-    }
-
-    function sendJson(msg) {
-        if (is_open) {
-            _send_(JSON.stringify(msg))
-        } else {
-            toast.show("websockets 已断开", 3000)
-            helxa_reset()
-        }
     }
 
     function _send_(msg) {
@@ -249,6 +274,40 @@ Item {
         sendJson({
                      "method": Common.METHOD_READ_UMD_PARAMS
                  })
+    }
+
+    function sendJson(msg, fn) {
+        if (!cb) {
+            cb = {}
+        }
+        if (is_open) {
+            if (fn) {
+                var key = cbIndex + ""
+                cb[key] = fn
+                msg["id"] = key
+                cbIndex += 1
+            }
+            _send_(JSON.stringify(msg))
+        } else {
+            if (fn) {
+                fn({
+                       "error": "通信失败"
+                   })
+            }
+
+            open()
+            helxa_reset()
+        }
+    }
+
+    function send(method, args, fn) {
+
+        var obj = {
+            "method": method,
+            "args": args
+        }
+
+        sendJson(obj, fn)
     }
 
     Component.onCompleted: {

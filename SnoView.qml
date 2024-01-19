@@ -15,10 +15,6 @@ Rectangle {
     property int _start_time: 0
     property real flow_x: 0
 
-    property var arr_flow_rt: []
-    property var arr_umd1: []
-    property var arr_force: []
-
     property bool easyUI: false
     property alias title: sm.title
 
@@ -28,16 +24,11 @@ Rectangle {
     property string resultPbb: ""
 
     property int preIndex: appSettings.job_id
+    property int retryTimes: 0
 
     function finish() {
-        if (chart_timer.running && arr_umd1.length > 200) {
-            try {
-                resultPbb = getResultMsg("Sno")
-            } catch (e) {
-                console.log("计算结果出现异常 arr_umd1.len = " + arr_umd1.length)
-            }
-
-            chart_timer.stop()
+        if (sm.arr_umd1.length > 200) {
+            getResultMsg()
             refreshStatus()
             if (sm.currentStatus === Common.STATUS_END_FINISH) {
                 try {
@@ -63,9 +54,9 @@ Rectangle {
     function reset_data() {
         flow_x = 0
         umd1_x = 0
-        arr_flow_rt.splice(0, arr_flow_rt.length)
-        arr_umd1.splice(0, arr_umd1.length)
-        arr_force.splice(0, arr_force.length)
+        sm.arr_flow_rt.splice(0, sm.arr_flow_rt.length)
+        sm.arr_umd1.splice(0, sm.arr_umd1.length)
+        sm.arr_force.splice(0, sm.arr_force.length)
     }
 
     function save() {
@@ -79,9 +70,9 @@ Rectangle {
             var sensor = sensorsModel[sensorIndex]
             var airbag = airBagsModel[appSettings.val_index]
 
-            var flow_rt = arr_flow_rt.join(",") + ""
-            var force = arr_force.join(",") + ""
-            var umd = arr_umd1.join(",") + ""
+            var flow_rt = sm.arr_flow_rt.join(",") + ""
+            var force = sm.arr_force.join(",") + ""
+            var umd = sm.arr_umd1.join(",") + ""
 
             try {
                 db.insertTestData(temperature, humidity,
@@ -127,18 +118,15 @@ Rectangle {
         result.text = d
     }
 
-    function getResultMsg(type) {
+    function getResultMsg() {
         var success = sm.currentStatus === Common.STATUS_END_FINISH
         var msg = ""
 
         if (success) {
             // 测试完成
-            var len = arr_umd1.length
-
             var sensor = sensorsModel[sensorIndex]
 
-            msg = calValue(arr_umd1, sm.sampleData[Common.UMD1_TEMP] / 100.0,
-                           sensor.sensor_standard)
+            msg = resultPbb
 
             if (isQc) {
                 var qualityExpectedValue = getGasConc()
@@ -176,6 +164,28 @@ Rectangle {
         return msg
     }
 
+    function getTestData() {
+        sm.send(Common.METHOD_DB_QUERY, {
+                    "table": Common.TABLE_EXHALE_TEST,
+                    "where_clause": " id =" + sm.serverJobId
+                }, function (obj) {
+                    if (obj.ok && typeof (obj.ok.data) === "object"
+                            && obj.ok.data.result) {
+                        resultPbb = obj.ok.data.result[0]
+                        finish()
+                    } else {
+                        console.log("同步测试数据失败 obj = " + JSON.stringify(obj.ok))
+                        retryTimes += 1
+                        if (retryTimes < 5) {
+                            getTestData_()
+                        } else {
+                            console.log("同步测试数据超时")
+                            finish()
+                        }
+                    }
+                })
+    }
+
     Timer {
         id: chart_timer
         repeat: true
@@ -187,7 +197,9 @@ Rectangle {
                                  sm.currentStatus)) {
                              sm.appendLog("测试结束 : " + Common.get_status_info(
                                               sm.currentStatus))
-                             finish()
+                             chart_timer.stop()
+                             getTestData()
+                             // finish()
                              return
                          }
 
@@ -222,8 +234,6 @@ Rectangle {
 
         var press_rt = obj[Common.PRESS_RT] / 10.0
 
-        arr_force.push(press_rt)
-
         if (sm.currentStatus === Common.STATUS_FLOW1) {
             return
         }
@@ -232,14 +242,7 @@ Rectangle {
             flow_rt = press_rt
         }
 
-        arr_flow_rt.push(flow_rt)
-
-        var nums = chart_timer.interval / 100
-        var len = Math.min(arr_flow_rt.length, nums)
-        let lastElements = arr_flow_rt.slice(-len)
-        let sum = lastElements.reduce(
-                (accumulator, currentValue) => accumulator + currentValue, 0)
-        let average = sum / len
+        let average = flow_rt
         flow_x += chart_timer.interval / 1000
 
         char_view.add(flow_x, average)
@@ -247,7 +250,6 @@ Rectangle {
 
     function addUmd1(obj) {
         var trace_umd1 = obj[Common.TRACE_UMD1]
-        arr_umd1.push(trace_umd1)
         let average = trace_umd1
         umd1_x += chart_timer.interval / 1000
 
@@ -472,7 +474,7 @@ Rectangle {
                     sm.close()
                     url = new_url
                     sm.sampleData = undefined
-                    lines_umd1.clear()
+                    // lines_umd1.clear()
                     chart.clear()
                 }
                 refreshStatus()
