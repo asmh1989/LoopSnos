@@ -177,7 +177,7 @@ Rectangle {
                         console.log("同步测试数据失败 obj = " + JSON.stringify(obj.ok))
                         retryTimes += 1
                         if (retryTimes < 5) {
-                            getTestData_()
+                            getTestData()
                         } else {
                             console.log("同步测试数据超时")
                             finish()

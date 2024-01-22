@@ -392,10 +392,11 @@ Page {
     }
 
     function cal(v) {
-        var umds = v.no_rt.split(",").map(vv => parseInt(vv))
-        var sensor_standard = parseFloat(v.sensor_standard)
-        var td = parseFloat(v.td)
-        return parseFloat(calValue(umds, td, sensor_standard))
+        // var umds = v.no_rt.split(",").map(vv => parseInt(vv))
+        // var sensor_standard = parseFloat(v.sensor_standard)
+        // var td = parseFloat(v.td)
+        var result = parseFloat(v.result)
+        return result //parseFloat(calValue(umds, td, sensor_standard))
     }
 
     function refresh() {
