@@ -56,6 +56,7 @@ Rectangle {
         umd1_x = 0
         sm.arr_flow_rt.splice(0, sm.arr_flow_rt.length)
         sm.arr_umd1.splice(0, sm.arr_umd1.length)
+        sm.arr_baseline.splice(0, sm.arr_baseline.length)
         sm.arr_force.splice(0, sm.arr_force.length)
     }
 
@@ -73,6 +74,7 @@ Rectangle {
             var flow_rt = sm.arr_flow_rt.join(",") + ""
             var force = sm.arr_force.join(",") + ""
             var umd = sm.arr_umd1.join(",") + ""
+            var baseline = sm.arr_baseline.join(",") + ""
 
             try {
                 db.insertTestData(temperature, humidity,
@@ -82,10 +84,11 @@ Rectangle {
                                   sensor.airLine_name, sensor.detector_name,
                                   airbag.airbag_no, airbag.gas_conc,
                                   resultPbb, flow_rt, force, umd,
-                                  sensor.detector_no, sensor.sensor_no,
-                                  sensor.sensor_standard)
+                                  baseline, sensor.detector_no,
+                                  sensor.sensor_no, sensor.sensor_standard)
                 console.log("保存成功")
             } catch (e) {
+                console.log("数据保存失败 = " + e)
                 showToast("数据保存失败 = " + e)
             }
         }

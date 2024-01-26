@@ -44,6 +44,7 @@ Item {
     property var arr_flow_rt: []
     property var arr_umd1: []
     property var arr_force: []
+    property var arr_baseline: []
 
     signal connectReceived(string message)
     signal settingChanged
@@ -108,9 +109,11 @@ Item {
                         var flow_rt = sampleData[Common.FLOW_RT] / 10.0
                         var press_rt = sampleData[Common.PRESS_RT] / 10.0
                         var trace_umd1 = sampleData[Common.TRACE_UMD1]
+                        var baseline = sampleData[Common.UMD1_BASELINE]
                         arr_umd1.push(trace_umd1)
                         arr_flow_rt.push(flow_rt)
                         arr_force.push(press_rt)
+                        arr_baseline.push(baseline)
                     }
 
                     if (inHelxa && update_count > 10 && Common.is_helxa_finish(
