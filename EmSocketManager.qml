@@ -119,9 +119,7 @@ Item {
                     }
                 } else if (obj.method === Common.METHOD_START_HELXA
                            && socket.type === EmSocket.WebSocket) {
-                    if (!inHelxa) {
-                        start_helxa_test("")
-                    } else {
+                    if (inHelxa) {
                         if (obj.ok && obj.ok.id) {
                             serverJobId = obj.ok.id
                             console.log("recv jobId = " + serverJobId)

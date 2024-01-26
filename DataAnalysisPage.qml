@@ -380,8 +380,7 @@ Page {
                 var ddd = dd.map(v => parseInt(v.job_id))
                 var ids = "\"" + Common.convertToRangeString(ddd) + "\""
 
-                console.log("ids = " + ids + " " + JSON.stringify(ddd))
-
+                // console.log("ids = " + ids + " " + JSON.stringify(ddd))
                 var new_result = [d.instrument_name, d.airLine_name, d.detector_name, d.gas_conc, ids, tfAvg.text, tfAE.text, tfRe.text, tfSD.text, tfCV.text]
 
                 var res = file.saveToCsv(getResultPrefix() + "/analysis.csv",

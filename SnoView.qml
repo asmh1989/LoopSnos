@@ -165,6 +165,7 @@ Rectangle {
     }
 
     function getTestData() {
+        console.log("start getTestData id = " + sm.serverJobId)
         sm.send(Common.METHOD_DB_QUERY, {
                     "table": Common.TABLE_EXHALE_TEST,
                     "where_clause": " id =" + sm.serverJobId
@@ -174,10 +175,14 @@ Rectangle {
                         resultPbb = obj.ok.data.result[0]
                         finish()
                     } else {
-                        console.log("同步测试数据失败 obj = " + JSON.stringify(obj.ok))
+                        console.log("serverJobId = " + sm.serverJobId
+                                    + " 同步测试数据失败 obj = " + JSON.stringify(
+                                        obj.ok))
                         retryTimes += 1
                         if (retryTimes < 5) {
-                            getTestData()
+                            setTimeout(function () {
+                                getTestData()
+                            }, 500)
                         } else {
                             console.log("同步测试数据超时")
                             finish()
@@ -198,7 +203,9 @@ Rectangle {
                              sm.appendLog("测试结束 : " + Common.get_status_info(
                                               sm.currentStatus))
                              chart_timer.stop()
-                             getTestData()
+                             setTimeout(function () {
+                                 getTestData()
+                             }, 300)
                              // finish()
                              return
                          }
