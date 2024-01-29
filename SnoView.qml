@@ -203,7 +203,7 @@ Rectangle {
                          // 结束
                          if (flow_x > 10 && Common.is_helxa_finish(
                                  sm.currentStatus)) {
-                             sm.inHelxa = false
+                             sm.needSaveCache = false
                              sm.appendLog("测试结束 : " + Common.get_status_info(
                                               sm.currentStatus))
                              chart_timer.stop()

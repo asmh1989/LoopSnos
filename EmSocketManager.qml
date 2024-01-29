@@ -37,6 +37,7 @@ Item {
     /// 呼吸检测进行状态
     //业务层状态
     property bool inHelxa: false
+    property bool needSaveCache: false
     //服务端状态
     property bool exhaleStarting: false
     property int serverJobId: 0
@@ -93,6 +94,7 @@ Item {
                 appendLog("设备启动异常, 请重试")
                 inHelxa = false
                 exhaleStarting = false
+                needSaveCache = false
                 return
             }
 
@@ -109,9 +111,11 @@ Item {
                     if (inHelxa && update_count > 10 && Common.is_helxa_finish(
                                 currentStatus)) {
                         inHelxa = false
+                        needSaveCache = false
                     }
 
-                    if (!Common.is_helxa_finish(currentStatus) && inHelxa) {
+                    if (!Common.is_helxa_finish(currentStatus)
+                            && needSaveCache) {
                         var flow_rt = sampleData[Common.FLOW_RT] / 10.0
                         var press_rt = sampleData[Common.PRESS_RT] / 10.0
                         var trace_umd1 = sampleData[Common.TRACE_UMD1]
@@ -127,6 +131,7 @@ Item {
                         if (obj.ok && obj.ok.id) {
                             serverJobId = obj.ok.id
                             console.log("recv jobId = " + serverJobId)
+                            needSaveCache = true
                         }
                     }
                 } else if (obj.method === Common.METHOD_DB_QUERY) {
