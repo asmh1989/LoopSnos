@@ -105,7 +105,13 @@ Item {
                     sampleData = obj.ok
 
                     currentStatus = sampleData[Common.FUNC_STATUS]
-                    if (!Common.is_helxa_finish(currentStatus)) {
+
+                    if (inHelxa && update_count > 10 && Common.is_helxa_finish(
+                                currentStatus)) {
+                        inHelxa = false
+                    }
+
+                    if (!Common.is_helxa_finish(currentStatus) && inHelxa) {
                         var flow_rt = sampleData[Common.FLOW_RT] / 10.0
                         var press_rt = sampleData[Common.PRESS_RT] / 10.0
                         var trace_umd1 = sampleData[Common.TRACE_UMD1]
@@ -114,11 +120,6 @@ Item {
                         arr_flow_rt.push(flow_rt)
                         arr_force.push(press_rt)
                         arr_baseline.push(baseline)
-                    }
-
-                    if (inHelxa && update_count > 10 && Common.is_helxa_finish(
-                                currentStatus)) {
-                        inHelxa = false
                     }
                 } else if (obj.method === Common.METHOD_START_HELXA
                            && socket.type === EmSocket.WebSocket) {
