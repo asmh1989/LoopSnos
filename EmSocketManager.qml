@@ -226,12 +226,12 @@ Item {
         exhaleStarting = false
     }
 
-    function start_helxa_test(command) {
+    function start_helxa_test(command, fn) {
         if (!timer.running) {
             if (command.length !== 0) {
                 var msg = Common.get_start_helxa_req(command)
                 appendLog("send: " + JSON.stringify(msg))
-                sendJson(msg)
+                sendJson(msg, fn)
             }
             helxa_reset()
             inHelxa = true
@@ -241,10 +241,10 @@ Item {
         }
     }
 
-    function stop_helxa_test() {
+    function stop_helxa_test(fn) {
         var msg = Common.get_stop_helxa_req()
         appendLog("send: " + JSON.stringify(msg))
-        sendJson(msg)
+        sendJson(msg, fn)
         helxa_reset()
         refresh_timer.start()
     }

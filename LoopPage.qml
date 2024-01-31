@@ -71,6 +71,7 @@ Page {
         curFmIndex = 0
         realStart()
         timer.start()
+        changeTime = 0
     }
 
     function realStart() {
@@ -577,11 +578,11 @@ Page {
             refresh()
             changeTime += 1
 
-            if (changeTime > 100) {
+            if (changeTime > 80) {
                 console.log("长时间没反应, 主动检查完成情况, curIndex = " + curIndex
                             + " curFmIndex = " + curFmIndex)
                 loopFinishCheck()
-            } else if (changeTime > 160) {
+            } else if (changeTime > 120) {
                 changeTime = 0
                 if (curIndex + 1 === loopModel.length) {
                     stop()
@@ -636,7 +637,9 @@ Page {
                 appendLog("curIndex = " + curIndex + " curFmIndex = " + curFmIndex)
             }
             if (waiting === 0) {
-                realStart()
+                setTimeout(function () {
+                    realStart()
+                }, 1500)
             } else {
                 appendLog("开始完成等待...")
             }

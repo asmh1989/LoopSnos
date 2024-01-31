@@ -34,14 +34,14 @@ Rectangle {
                 try {
                     save()
                 } catch (e) {
-                    console.log("数据库存储失败")
+                    appendLog("数据库存储失败")
                 }
             }
             if (preIndex === appSettings.job_id) {
                 appSettings.job_id += 1
             }
-            console.log("finish sensorIndex = " + sensorIndex + " preIndex = "
-                        + preIndex + " job_id = " + appSettings.job_id)
+            appendLog("finish sensorIndex = " + sensorIndex + " preIndex = "
+                      + preIndex + " job_id = " + appSettings.job_id)
             reset_data()
             _start_time = 0
 
@@ -86,9 +86,9 @@ Rectangle {
                                   resultPbb, flow_rt, force, umd,
                                   baseline, sensor.detector_no,
                                   sensor.sensor_no, sensor.sensor_standard)
-                console.log("保存成功")
+                appendLog("保存成功")
             } catch (e) {
-                console.log("数据保存失败 = " + e)
+                appendLog("数据保存失败 = " + e)
                 showToast("数据保存失败 = " + e)
             }
         }
@@ -207,10 +207,14 @@ Rectangle {
                              sm.appendLog("测试结束 : " + Common.get_status_info(
                                               sm.currentStatus))
                              chart_timer.stop()
-                             setTimeout(function () {
-                                 getTestData()
-                             }, 300)
-                             // finish()
+                             if (sm.currentStatus === Common.STATUS_END_FINISH) {
+                                 setTimeout(function () {
+                                     getTestData()
+                                 }, 300)
+                             } else {
+                                 reset_data()
+                             }
+
                              return
                          }
 
@@ -264,7 +268,9 @@ Rectangle {
         let average = trace_umd1
         umd1_x += chart_timer.interval / 1000
 
-        chart_umd1.add(umd1_x, average)
+        if (!Common.is_helxa_finish(sm.currentStatus)) {
+            chart_umd1.add(umd1_x, average)
+        }
     }
 
     function start() {
@@ -336,17 +342,14 @@ Rectangle {
     function startSno() {
         if (sm.is_open) {
             preTestDate = new Date()
-            sm.start_helxa_test("Sno")
-
-            setTimeout(function () {
-                if (!chart_timer.running) {
-                    console.log("超时， 未收到服务端启动命令， 重启Sno")
-                    forceStop()
+            sm.start_helxa_test("Sno", function (obj) {
+                if (obj.error) {
+                    console.log("Sno 启动失败， 重启Sno = " + obj.error)
                     setTimeout(function () {
                         startSno()
-                    }, 2000)
+                    }, 1000)
                 }
-            }, 6000)
+            })
         }
     }
 
@@ -395,6 +398,8 @@ Rectangle {
     function stopLoopTest() {
         timer.stop()
         timer2.stop()
+        chart_timer.stop()
+        reset_data()
         times = 0
         if (sm.exhaleStarting) {
             sm.stop_helxa_test()
@@ -405,6 +410,19 @@ Rectangle {
         var msg = "开始循环离线测试 times = " + times
         sm.appendLog(msg)
         startSno()
+    }
+
+    function finishCheck() {
+        setTimeout(function () {
+            sm.stop_helxa_test(function (obj) {
+                if (obj.ok) {
+                    eventBus.sendMessage(Common.MESSAFE_SLOOP_FINISH)
+                } else {
+                    console.log("stop_helxa_test failed = " + obj.error)
+                    finishCheck()
+                }
+            })
+        }, 1000)
     }
 
     Timer {
@@ -420,14 +438,14 @@ Rectangle {
             }
 
             if (times < appSettings.offline_times + 1) {
-                if (!sm.inHelxa) {
+                if (!sm.inHelxa && preIndex !== appSettings.job_id) {
                     // 结束后
                     timer.stop()
                     if (times === appSettings.offline_times) {
                         // 次数用完, 结束任务
                         sm.appendLog(appSettings.offline_times + "次循环离线测试完成!")
                         stopLoopTest()
-                        eventBus.sendMessage(Common.MESSAFE_SLOOP_FINISH)
+                        finishCheck()
                     } else {
                         // 还有次数开启延时间隔执行
                         timer2.interval = Math.max(
