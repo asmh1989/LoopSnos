@@ -130,7 +130,7 @@ ApplicationWindow {
     }
 
     function showToast(msg, time) {
-        toast.show(msg, time ? time : 1500)
+        toast.show(msg, time ? time : 3000)
     }
 
     function setTimeout(func, interval, ...params) {

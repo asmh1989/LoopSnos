@@ -90,8 +90,8 @@ Page {
                         }
 
                         onTextChanged: {
-                            console.log("ids = " + Common.generateArrayFromString(
-                                            text))
+                            // console.log("ids = " + Common.generateArrayFromString(
+                            //                 text))
                         }
                     }
 
@@ -100,12 +100,12 @@ Page {
                         width: parent.width
 
                         onClicked: {
-                            var d = r4Arr.filter(v => v.checked)
-                            if (d.length === 0) {
-                                showToast("请选择一个气袋浓度")
-                                return
-                            }
-                            d = r3Arr.filter(v => v.checked)
+                            // var d = r4Arr.filter(v => v.checked)
+                            // if (d.length === 0) {
+                            //     showToast("请选择一个气袋浓度")
+                            //     return
+                            // }
+                            var d = r3Arr.filter(v => v.checked)
                             if (d.length === 0) {
                                 showToast("请选择一个传感器")
                                 return
@@ -118,6 +118,11 @@ Page {
                             d = r1Arr.filter(v => v.checked)
                             if (d.length === 0) {
                                 showToast("请选择一个仪器")
+                                return
+                            }
+
+                            if (gasTf.text.length === 0) {
+                                showToast("请输入气袋浓度!")
                                 return
                             }
 
@@ -249,26 +254,34 @@ Page {
                                 anchors.verticalCenter: parent.verticalCenter
                             }
                         }
-                        Repeater {
-                            id: gasR
-                            model: r4Arr
-                            Layout.fillWidth: true
-                            delegate: Item {
-                                width: myWidth
-                                height: parent.height
-                                CheckBox {
-                                    text: modelData.text
-                                    checked: modelData.checked
-                                    anchors.verticalCenter: parent.verticalCenter
-
-                                    onCheckedChanged: {
-                                        r4Arr.forEach(v => v.checked = false)
-                                        r4Arr[index].checked = checked
-                                        gasR.model = r4Arr
-                                    }
-                                }
-                            }
+                        TextField {
+                            id: gasTf
+                            // placeholderText: "请输入气袋浓度"
+                            Layout.preferredWidth: 200
+                            font.pixelSize: 18
+                            Layout.alignment: Qt.AlignVCenter
                         }
+
+                        // Repeater {
+                        //     id: gasR
+                        //     model: r4Arr
+                        //     Layout.fillWidth: true
+                        //     delegate: Item {
+                        //         width: myWidth
+                        //         height: parent.height
+                        //         CheckBox {
+                        //             text: modelData.text
+                        //             checked: modelData.checked
+                        //             anchors.verticalCenter: parent.verticalCenter
+
+                        //             onCheckedChanged: {
+                        //                 r4Arr.forEach(v => v.checked = false)
+                        //                 r4Arr[index].checked = checked
+                        //                 gasR.model = r4Arr
+                        //             }
+                        //         }
+                        //     }
+                        // }
                     }
                 }
             }
@@ -401,15 +414,16 @@ Page {
     function refresh() {
         if (dd.length > 0) {
             var c = dd.map(v => cal(v))
-            var gas = parseInt(airBagsModel.filter(
-                                   (v, index) => r4Arr[index].checked).map(
-                                   v => v.gas_conc))
-            // console.log("gas = " + gas)
+            // var gas = parseInt(airBagsModel.filter(
+            //                        (v, index) => r4Arr[index].checked).map(
+            //                        v => v.gas_conc))
+            var gas = parseFloat(gasTf.text)
+            console.log("gas = " + gas)
             var m = Common.mean(c)
             var sd = Common.stdev(c)
             tfAvg.text = m.toFixed(1)
-            tfAE.text = Math.abs(m - gas).toFixed(1)
-            tfRe.text = (Math.abs(m - gas) / m * 100.0).toFixed(1) + "%"
+            tfAE.text = (m - gas).toFixed(1)
+            tfRe.text = ((m - gas) / m * 100.0).toFixed(1) + "%"
             tfSD.text = sd.toFixed(1)
             tfCV.text = (sd / m * 100.0).toFixed(1) + "%"
         } else {
@@ -428,8 +442,7 @@ Page {
                               r2Arr.filter(v => v.checked).map(
                                   v => "'" + v.text + "'"), r3Arr.filter(
                                   v => v.checked).map(v => "'" + v.text + "'"),
-                              r4Arr.filter(v => v.checked).map(
-                                  v => "'" + v.text + "'"), Common.generateArrayFromString(
+                              "'" + gasTf.text + "'", Common.generateArrayFromString(
                                   testId.text))
 
         if (dd.length > 10) {

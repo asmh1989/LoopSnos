@@ -410,3 +410,54 @@ function formatDate3(currentDate) {
     var formattedDate = hours + ':' + minutes + ":" + seconds + "=>"
     return formattedDate
 }
+
+function validateJson(jsonString) {
+    let parsedArray
+    try {
+        parsedArray = JSON.parse(jsonString)
+    } catch (e) {
+        // 解析失败
+        console.error("JSON parsing error:", e)
+        return []
+    }
+
+    // 检查是否为非空数组
+    if (!Array.isArray(parsedArray) || parsedArray.length === 0) {
+        console.log("顶层不是数组或为空")
+        return []
+    }
+
+    // 验证每个项目的结构和数据类型
+    for (const item of parsedArray) {
+        if (typeof item !== 'object' || item === null || !Array.isArray(
+                    item.data) || item.data.length === 0) {
+            console.log("item.data 不是数组")
+            return []
+        }
+
+        if (typeof item.loop !== 'number') {
+            console.log("item.loop 不是数字")
+            return []
+        }
+
+        if (item.loop < 1) {
+            item.loop = 1
+        } else if (item.loop > 1000) {
+            item.loop = 1000
+        }
+
+        for (const dataItem of item.data) {
+            // 直接通过属性访问替代对象解构
+            if (typeof dataItem.fm !== 'string'
+                    || typeof dataItem.count !== 'number'
+                    || typeof dataItem.delay !== 'number'
+                    || typeof dataItem.waiting !== 'number') {
+                console.log("dataItem 类型错误 = " + JSON.stringify(dataItem))
+                return []
+            }
+        }
+    }
+
+    // 所有验证通过
+    return parsedArray
+}

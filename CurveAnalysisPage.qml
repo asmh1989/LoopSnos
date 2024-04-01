@@ -97,8 +97,8 @@ Page {
                         }
 
                         onTextChanged: {
-                            console.log("ids = " + Common.generateArrayFromString(
-                                            text))
+                            // console.log("ids = " + Common.generateArrayFromString(
+                            //                 text))
                         }
                     }
 
@@ -227,22 +227,11 @@ Page {
                                 anchors.verticalCenter: parent.verticalCenter
                             }
                         }
-                        Repeater {
-                            model: r4Arr
-                            Layout.fillWidth: true
-                            delegate: Item {
-                                width: myWidth
-                                height: parent.height
-                                CheckBox {
-                                    text: modelData.text
-                                    checked: modelData.checked
-                                    anchors.verticalCenter: parent.verticalCenter
-
-                                    onCheckedChanged: {
-                                        r4Arr[index].checked = checked
-                                    }
-                                }
-                            }
+                        TextField {
+                            id: gasTf
+                            Layout.preferredWidth: 200
+                            font.pixelSize: 18
+                            Layout.alignment: Qt.AlignVCenter
                         }
                     }
                 }
@@ -293,8 +282,7 @@ Page {
                               r2Arr.filter(v => v.checked).map(
                                   v => "'" + v.text + "'"), r3Arr.filter(
                                   v => v.checked).map(v => "'" + v.text + "'"),
-                              r4Arr.filter(v => v.checked).map(
-                                  v => "'" + v.text + "'"), Common.generateArrayFromString(
+                              "'" + gasTf.text + "'", Common.generateArrayFromString(
                                   testId.text))
         clear()
         dd.forEach((v, index) => {
@@ -373,13 +361,12 @@ Page {
                                      }
                                  })
 
-        r4Arr = airBagsModel.map(value => {
-                                     return {
-                                         "text": value.gas_conc,
-                                         "checked": false
-                                     }
-                                 })
-
+        // r4Arr = airBagsModel.map(value => {
+        //                              return {
+        //                                  "text": value.gas_conc,
+        //                                  "checked": false
+        //                              }
+        //                          })
         getData()
     }
 }

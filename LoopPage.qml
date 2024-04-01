@@ -1,8 +1,10 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import "common.js" as Common
 import QtQuick.Controls.Material
+import QtQuick.Dialogs
+
+import "common.js" as Common
 
 Page {
     id: page
@@ -75,6 +77,7 @@ Page {
     }
 
     function realStart() {
+        console.log("realStart ..")
         eventBus.sendMessage(
                     Common.MESSAGE_ADD_LOG,
                     "高级离线循环测试 curIndex = " + curIndex + " curFmIndex = " + curFmIndex)
@@ -124,6 +127,43 @@ Page {
         }
     }
 
+    function loadConfig() {
+        fileDialog.open()
+    }
+
+    function toModelData(dd) {
+        var r = []
+        for (const d of dd) {
+            for (var i = 0; i < d.loop; i++) {
+                r = r.concat(d.data)
+            }
+        }
+        return r
+    }
+
+    FileDialog {
+        id: fileDialog
+        nameFilters: ["json file (*.json)"]
+
+        onAccepted: {
+            var path = (fileDialog.currentFile + "").replace("file:///", "")
+            file.source = path
+            var content = file.read()
+            console.log("path = " + path)
+            console.log("read content = " + content)
+            var arr = Common.validateJson(content)
+            if (arr.length === 0) {
+                showToast("解析失败, 请检查文件内容: " + path)
+            } else {
+                loopModel = toModelData(arr)
+                showToast("导入成功, 共发现 " + loopModel.length + " 条任务")
+                setTimeout(function () {
+                    saveJsonFile(Common.LOOP_CONFIG_PATH, loopModel, true)
+                }, 100)
+                listView.model = loopModel
+            }
+        }
+    }
     // padding: 20
     Column {
         anchors.fill: parent
@@ -165,8 +205,8 @@ Page {
                         }
 
                         onTextChanged: {
-                            console.log("ids = " + Common.generateArrayFromString(
-                                            text))
+                            // console.log("ids = " + Common.generateArrayFromString(
+                            //                 text))
                         }
                     }
 
@@ -264,10 +304,13 @@ Page {
                         boundsBehavior: Flickable.StopAtBounds
                         boundsMovement: Flickable.StopAtBounds
                         clip: true
+                        headerPositioning: ListView.OverlayHeader
+                        ScrollBar.vertical: ScrollBar {}
                         header: Rectangle {
                             color: Material.primary
                             height: 30
                             width: listView.width
+                            z: 100
 
                             Row {
                                 anchors.fill: parent
@@ -428,6 +471,14 @@ Page {
                     anchors.centerIn: parent
 
                     Button {
+                        text: "导入"
+                        enabled: !running
+                        onClicked: {
+                            loadConfig()
+                        }
+                    }
+
+                    Button {
                         text: "开始"
                         enabled: !running
                         onClicked: {
@@ -576,11 +627,13 @@ Page {
         interval: 1000
         onTriggered: {
             refresh()
-            changeTime += 1
+            if (waiting < 2) {
+                changeTime += 1
+            }
 
             if (changeTime > 80) {
                 console.log("长时间没反应, 主动检查完成情况, curIndex = " + curIndex
-                            + " curFmIndex = " + curFmIndex)
+                            + " curFmIndex = " + curFmIndex +" changeTime = "+ changeTime +" waiting = "+ waiting)
                 loopFinishCheck()
             } else if (changeTime > 120) {
                 changeTime = 0
@@ -614,6 +667,7 @@ Page {
 
     function loopFinishCheck() {
         if (!running) {
+            console.log("loopFinishCheck already stop")
             return
         }
 

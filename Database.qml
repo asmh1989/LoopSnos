@@ -54,11 +54,11 @@ QtObject {
             where += "detector_name in (" + detectors.join(",") + ")"
         }
 
-        if (gas.length > 0) {
+        if (gas.length > 2) {
             if (where.length > 0) {
                 where += " AND "
             }
-            where += "gas_conc in (" + gas.join(",") + ")"
+            where += "gas_conc in (" + gas + ")"
         }
 
         if (ids.length > 0) {
