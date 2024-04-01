@@ -205,6 +205,7 @@ Page {
                         }
 
                         onTextChanged: {
+
                             // console.log("ids = " + Common.generateArrayFromString(
                             //                 text))
                         }
@@ -631,11 +632,7 @@ Page {
                 changeTime += 1
             }
 
-            if (changeTime > 80) {
-                console.log("长时间没反应, 主动检查完成情况, curIndex = " + curIndex
-                            + " curFmIndex = " + curFmIndex +" changeTime = "+ changeTime +" waiting = "+ waiting)
-                loopFinishCheck()
-            } else if (changeTime > 120) {
+            if (changeTime > 120) {
                 changeTime = 0
                 if (curIndex + 1 === loopModel.length) {
                     stop()
@@ -648,6 +645,11 @@ Page {
                     curFmIndex = 0
                     realStart()
                 }
+            } else if (changeTime > 80) {
+                console.log("长时间没反应, 主动检查完成情况, curIndex = " + curIndex
+                            + " curFmIndex = " + curFmIndex + " changeTime = "
+                            + changeTime + " waiting = " + waiting)
+                loopFinishCheck()
             }
         }
     }
