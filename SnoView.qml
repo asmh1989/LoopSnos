@@ -27,6 +27,10 @@ Rectangle {
     property int retryTimes: 0
     property int finishTimes: 0
 
+    function appendLog(msg) {
+        eventBus.sendMessage(Common.MESSAGE_ADD_LOG, msg)
+    }
+
     function finish() {
         if (!sm.is_open && sm.arr_umd1.length === 0) {
             return
@@ -187,7 +191,7 @@ Rectangle {
     }
 
     function getTestData() {
-        console.log("start getTestData id = " + sm.serverJobId)
+        appendLog("start getTestData id = " + sm.serverJobId)
         sm.send(Common.METHOD_DB_QUERY, {
                     "table": Common.TABLE_EXHALE_TEST,
                     "where_clause": " id =" + sm.serverJobId,
@@ -198,7 +202,9 @@ Rectangle {
                                 && obj.ok.data.cal.sno) {
                             resultPbb = obj.ok.data.cal.sno.history[0]
                         } else {
-                            console.log("获取成功, 但格式异常")
+                            console.log("获取成功, 但格式异常, 重试!")
+                            getTestData()
+                            return
                         }
                         finish()
                     } else {
@@ -313,7 +319,7 @@ Rectangle {
             chart_timer.start()
             preIndex = appSettings.job_id
 
-            console.log("start sensorIndex = " + sensorIndex + " preIndex = "
+            appendLog("start sensorIndex = " + sensorIndex + " preIndex = "
                         + preIndex + " job_id = " + appSettings.job_id)
         }
     }
@@ -448,16 +454,22 @@ Rectangle {
     }
 
     function finishCheck() {
-        setTimeout(function () {
-            sm.stop_helxa_test(function (obj) {
-                if (obj.ok) {
-                    eventBus.sendMessage(Common.MESSAFE_SLOOP_FINISH)
+        sm.refresh(function () {
+            setTimeout(function () {
+                if (!Common.is_helxa_finish(sm.currentStatus)) {
+                    sm.stop_helxa_test(function (obj) {
+                        if (obj.ok) {
+                            eventBus.sendMessage(Common.MESSAFE_SLOOP_FINISH)
+                        } else {
+                            console.log("stop_helxa_test failed = " + obj.error)
+                            finishCheck()
+                        }
+                    })
                 } else {
-                    console.log("stop_helxa_test failed = " + obj.error)
-                    finishCheck()
+                    eventBus.sendMessage(Common.MESSAFE_SLOOP_FINISH)
                 }
-            })
-        }, 1000)
+            }, 200)
+        })
     }
 
     Timer {

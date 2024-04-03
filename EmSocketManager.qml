@@ -250,9 +250,9 @@ Item {
         refresh_timer.start()
     }
 
-    function refresh() {
+    function refresh(fn) {
         let msg = Common.get_sample_req(30)
-        sendJson(msg)
+        sendJson(msg, fn)
     }
 
     function appendLog(msg) {
