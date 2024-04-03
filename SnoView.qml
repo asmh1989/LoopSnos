@@ -25,30 +25,49 @@ Rectangle {
 
     property int preIndex: appSettings.job_id
     property int retryTimes: 0
+    property int finishTimes: 0
 
     function finish() {
-        if (sm.arr_umd1.length > 200) {
+        if (!sm.is_open && sm.arr_umd1.length === 0) {
+            return
+        }
+
+        if (Common.is_helxa_finish(sm.currentStatus)) {
             getResultMsg()
             refreshStatus()
-            if (sm.currentStatus === Common.STATUS_END_FINISH) {
+
+            if (preIndex === appSettings.job_id) {
+                appSettings.job_id += 1
+            }
+
+            _start_time = 0
+
+            if (sm.currentStatus === Common.STATUS_END_FINISH
+                    && sm.arr_umd1.length > 100) {
                 try {
+                    appendLog("finish sensorIndex = " + sensorIndex + " preIndex = "
+                              + preIndex + " job_id = " + appSettings.job_id)
+                    eventBus.sendMessage(Common.MESSAGE_FINISH_ONE, sensorIndex)
                     save()
                 } catch (e) {
                     appendLog("数据库存储失败")
                 }
+            } else {
+                appendLog("工作异常, sensorIndex = " + sensorIndex + " preIndex = "
+                          + preIndex + " job_id = " + appSettings.job_id + "  开始重试!!")
+                times -= 1
             }
-            if (preIndex === appSettings.job_id) {
-                appSettings.job_id += 1
-            }
-            appendLog("finish sensorIndex = " + sensorIndex + " preIndex = "
-                      + preIndex + " job_id = " + appSettings.job_id)
-            reset_data()
-            _start_time = 0
 
-            eventBus.sendMessage(Common.MESSAGE_FINISH_ONE, sensorIndex)
+            reset_data()
         } else {
-            console.log("异常finish， 忽略")
+            console.log("忽略, status = " + sm.currentStatus)
         }
+    }
+
+    function restart() {
+        chart_timer.stop()
+        finishTimes = 1
+        reset_data()
     }
 
     function reset_data() {
@@ -171,11 +190,16 @@ Rectangle {
         console.log("start getTestData id = " + sm.serverJobId)
         sm.send(Common.METHOD_DB_QUERY, {
                     "table": Common.TABLE_EXHALE_TEST,
-                    "where_clause": " id =" + sm.serverJobId
+                    "where_clause": " id =" + sm.serverJobId,
+                    "history": true
                 }, function (obj) {
-                    if (obj.ok && typeof (obj.ok.data) === "object"
-                            && obj.ok.data.result) {
-                        resultPbb = obj.ok.data.result[0]
+                    if (obj.ok) {
+                        if (typeof (obj.ok.data) === "object" && obj.ok.data.cal
+                                && obj.ok.data.cal.sno) {
+                            resultPbb = obj.ok.data.cal.sno.history[0]
+                        } else {
+                            console.log("获取成功, 但格式异常")
+                        }
                         finish()
                     } else {
                         console.log("serverJobId = " + sm.serverJobId
@@ -207,6 +231,7 @@ Rectangle {
                              sm.appendLog("测试结束 : " + Common.get_status_info(
                                               sm.currentStatus))
                              chart_timer.stop()
+                             finishTimes = 1
                              if (sm.currentStatus === Common.STATUS_END_FINISH) {
                                  setTimeout(function () {
                                      getTestData()
@@ -218,10 +243,17 @@ Rectangle {
                              return
                          }
 
+                         // 连接异常后, 主动关闭轮询
+                         if (!sm.is_open) {
+                             restart()
+                             return
+                         }
+
                          if (_start_time === 0) {
                              var update_time = new Date(obj[Common.UPDATE_TIME]).getTime()
                              _start_time = update_time
                              reset_data()
+                             finishTimes = 0
                              return
                          }
 
@@ -364,7 +396,7 @@ Rectangle {
             sm.open()
         }
     }
-    function isOpen(){
+    function isOpen() {
         return sm.is_open
     }
 
@@ -434,10 +466,27 @@ Rectangle {
         interval: 1000
         repeat: true
         onTriggered: {
+            if (!sm.is_open) {
+                return
+            }
+
             if (times === 0) {
                 // 开始第一次
                 _start_test()
                 return
+            }
+            if (finishTimes > 0) {
+                finishTimes += 1
+                if (sm.arr_umd1.length > 100 && finishTimes === 5
+                        && resultPbb.length === 0) {
+                    getTestData()
+                }
+                if (finishTimes > 10) {
+                    console.log("完成等待超时...")
+                    finishTimes = 0
+                    finish()
+                    return
+                }
             }
 
             if (times < appSettings.offline_times + 1) {

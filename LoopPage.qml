@@ -622,6 +622,9 @@ Page {
                                 if (!sno.isOpen()) {
                                     sno.open()
                                 }
+                            } else if (message === "Restart") {
+                                sno.close()
+                                sno.restart()
                             }
                         }
                     }
@@ -629,7 +632,6 @@ Page {
             }
         }
     }
-
 
     Timer {
         id: timer
@@ -643,26 +645,18 @@ Page {
             }
 
             if (changeTime > 120) {
-                postWechat()
-                changeTime = 0
-                if (curIndex + 1 === loopModel.length) {
-                    stop()
-                    return
-                } else {
-                    var m = loopModel[curIndex]
-                    appendLog("序列号 = " + curIndex + " 已完成")
-                    waiting = m.waiting
-
-                    curIndex += 1
-                    curFmIndex = 0
-                    realStart()
+                if (changeTime === 121 || changeTime % 7200 === 0) {
+                    postWechat()
+                    bus.sendMessage("Restart")
                 }
-            } else if (changeTime > 80) {
+            } else if (changeTime > 80 && changeTime % 10 === 0) {
                 console.log("长时间没反应, 主动检查完成情况, curIndex = " + curIndex
                             + " curFmIndex = " + curFmIndex + " changeTime = "
                             + changeTime + " waiting = " + waiting)
                 loopFinishCheck()
-            } else if (changeTime > 60) {
+            }
+
+            if (changeTime % 2 === 0) {
                 bus.sendMessage("CheckConnection")
             }
         }

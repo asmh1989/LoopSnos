@@ -101,6 +101,12 @@ int main(int argc, char *argv[]) {
   QQmlApplicationEngine engine;
   engine.setOfflineStoragePath("./");
 
+#ifdef QT_DEBUG
+  engine.rootContext()->setContextProperty("debug", true);
+#else
+  engine.rootContext()->setContextProperty("debug", false);
+#endif
+
   //  QObject::connect(
   //      &engine, &QQmlApplicationEngine::objectCreationFailed, &app,
   //      []() { QCoreApplication::exit(-1); }, Qt::QueuedConnection);

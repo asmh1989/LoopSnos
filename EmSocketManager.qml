@@ -175,6 +175,7 @@ Item {
                     getUmdParams()
                     refresh()
                 }
+                stop_helxa_test()
             } else if (socket.status == EmSocket.Closed) {
                 appendLog("closed")
                 connectReceived("Socket closed")

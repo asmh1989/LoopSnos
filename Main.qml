@@ -147,8 +147,8 @@ ApplicationWindow {
     }
 
     Component.onCompleted: {
-        // postWechat()
 
+        // postWechat()
         airBagsModel = loadJsonFile(Common.AIRBAG_CONFIG_PATH)
         if (airBagsModel.length == 0) {
             [1, 2, 3, 4, 5, 6, 7, 8].forEach(function (e) {
@@ -204,6 +204,10 @@ ApplicationWindow {
     }
 
     function openVal() {
+
+        if (debug) {
+            return
+        }
 
         if (webSocket.status === EmSocket.Open) {
             eventBus.sendMessage(Common.MESSAGE_ADD_LOG,
@@ -287,31 +291,36 @@ ApplicationWindow {
         return (umd1 / sensor_standard).toFixed(1)
     }
 
-    function postWechat(){
-        console.log("开始推送错误状态!")
-        var data = JSON.stringify({
-          "token": "547880c025c14118a4fc89ddb51b88d3",
-          "title": "离线循环测试报错了",
-          "content": "快去检查! (仅提示,可以观察下是否能恢复!)"
-        });
+    function postWechat() {
 
-        var xhr = new XMLHttpRequest();
-        xhr.withCredentials = true;
+        console.log("开始推送错误状态!")
+        if (debug) {
+            return
+        }
+
+        var data = JSON.stringify({
+                                      "token": "547880c025c14118a4fc89ddb51b88d3",
+                                      "title": "离线循环测试报错了",
+                                      "content": "快去检查! (仅提示,可以观察下是否能恢复!)"
+                                  })
+
+        var xhr = new XMLHttpRequest()
+        xhr.withCredentials = true
 
         xhr.onreadystatechange = function () {
             if (xhr.readyState === XMLHttpRequest.DONE) {
                 if (xhr.status === 200) {
                     console.log("推送成功")
                 } else {
-                    console.log("推送失败 + "+ xhr.status)
+                    console.log("推送失败 + " + xhr.status)
                 }
             }
         }
 
-        xhr.open("POST", "http://www.pushplus.plus/send/");
-        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.open("POST", "http://www.pushplus.plus/send/")
+        xhr.setRequestHeader("Content-Type", "application/json")
 
-        xhr.send(data);
+        xhr.send(data)
     }
 
     Settings {
