@@ -105,8 +105,6 @@ Page {
         bus.sendMessage("StopLoopTest")
         timer.stop()
         eventBus.sendMessage(Common.MESSAGE_ADD_LOG, "高级离线循环测试完成")
-        cacheData = []
-
         refresh()
     }
 
@@ -610,9 +608,20 @@ Page {
 
                         function onMessageReceived(message, content) {
                             if (message === "StartLoopTest") {
-                                sno.startLoopTest()
+                                if (!sno.isOpen()) {
+                                    sno.open()
+                                    setTimeout(function () {
+                                        sno.startLoopTest()
+                                    }, 100)
+                                } else {
+                                    sno.startLoopTest()
+                                }
                             } else if (message === "StopLoopTest") {
                                 sno.stopLoopTest()
+                            } else if (message === "CheckConnection") {
+                                if (!sno.isOpen()) {
+                                    sno.open()
+                                }
                             }
                         }
                     }
@@ -620,6 +629,7 @@ Page {
             }
         }
     }
+
 
     Timer {
         id: timer
@@ -633,11 +643,13 @@ Page {
             }
 
             if (changeTime > 120) {
+                postWechat()
                 changeTime = 0
                 if (curIndex + 1 === loopModel.length) {
                     stop()
                     return
                 } else {
+                    var m = loopModel[curIndex]
                     appendLog("序列号 = " + curIndex + " 已完成")
                     waiting = m.waiting
 
@@ -650,6 +662,8 @@ Page {
                             + " curFmIndex = " + curFmIndex + " changeTime = "
                             + changeTime + " waiting = " + waiting)
                 loopFinishCheck()
+            } else if (changeTime > 60) {
+                bus.sendMessage("CheckConnection")
             }
         }
     }

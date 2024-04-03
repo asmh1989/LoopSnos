@@ -364,6 +364,9 @@ Rectangle {
             sm.open()
         }
     }
+    function isOpen(){
+        return sm.is_open
+    }
 
     function close() {
         if (sm.is_open) {
