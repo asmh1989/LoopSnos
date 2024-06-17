@@ -146,7 +146,9 @@ function get_start_helxa_req(command) {
     return {
         "method": METHOD_START_HELXA,
         "args": {
-            "command": command
+            "command": command,
+            "qc_type": 0,
+            "qc_name": "sNo"
         }
     }
 }

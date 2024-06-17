@@ -49,6 +49,43 @@ Page {
                 anchors.fill: parent
                 anchors.margins: 1
 
+                Row {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    spacing: 6
+                    Text {
+                        text: "气袋切换装置地址:"
+                        font.pixelSize: 16
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+
+                    TextField {
+                        id: fff
+                        font.pixelSize: 16
+                        width: 300
+                        Component.onCompleted: {
+                            text = appSettings.val_url
+                        }
+                        anchors.verticalCenter: parent.verticalCenter
+
+                        onEditingFinished: {
+                        }
+                    }
+
+                    Button {
+                        text: "保存"
+                        onClicked: {
+                            appSettings.val_url = fff.text
+                            webSocket.close()
+                            webSocket.open()
+                        }
+                    }
+                }
+
+                Item {
+                    width: 1
+                    height: 10
+                }
+
                 Rectangle {
                     width: parent.width
                     color: '#cecece'

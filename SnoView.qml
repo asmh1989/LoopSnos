@@ -137,7 +137,7 @@ Rectangle {
 
             if (func_status === Common.STATUS_END_FINISH
                     && resultPbb.length > 0) {
-                d = d + " 测试成功" + resultPbb + "ppb"
+                d = d + " 测试成功 " + resultPbb + "ppb"
             }
         }
 
@@ -199,8 +199,13 @@ Rectangle {
                 }, function (obj) {
                     if (obj.ok) {
                         if (typeof (obj.ok.data) === "object" && obj.ok.data.cal
-                                && obj.ok.data.cal.sno) {
-                            resultPbb = obj.ok.data.cal.sno.history[0]
+                                && obj.ok.data.pid) {
+                            var serverData = obj.ok.data
+                            try {
+                                resultPbb = getHistoryResult(serverData.cal.sno.history[0])
+                            } catch (e) {
+                                console.log("get_test_data error..." + e)
+                            }
                         } else {
                             console.log("获取成功, 但格式异常, 重试!")
                             getTestData()

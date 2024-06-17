@@ -237,6 +237,18 @@ ApplicationWindow {
         eventBus.sendMessage(Common.MESSAGE_ADD_LOG, msg)
     }
 
+    function getHistoryResult(data) {
+        var arr = data
+        if (!Array.isArray(data)) {
+            arr = [data]
+        }
+        var result = arr[0]
+        if (typeof (result) === 'object') {
+            result = result.result
+        }
+        return result
+    }
+
     EmSocket {
         id: webSocket
         url: appSettings.val_url
