@@ -37,7 +37,7 @@ Page {
                     height: grid.cellHeight - 4
                     sensorIndex: index
                     id: sno
-                    url: urls[index]
+                    myurl: urls[index]
                     title: page.title
                     border {
                         width: 4

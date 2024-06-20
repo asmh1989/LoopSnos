@@ -594,7 +594,7 @@ Page {
                     height: grid.cellHeight - 4
                     sensorIndex: index
                     id: sno
-                    url: urls[index]
+                    myurl: urls[index]
                     easyUI: true
                     title: page.title
                     border {

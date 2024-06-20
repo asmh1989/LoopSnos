@@ -130,7 +130,7 @@ Item {
                     if (inHelxa) {
                         if (obj.ok && obj.ok.id) {
                             serverJobId = obj.ok.id
-                            console.log("recv jobId = " + serverJobId)
+                            appendLog("recv jobId = " + serverJobId)
                             needSaveCache = true
                         }
                     }
@@ -151,7 +151,7 @@ Item {
                     umdParams = obj.ok
                 }
             } else {
-                showToast("error msg =  " + message)
+                console.log("error msg =  " + message)
             }
         }
 

@@ -5,7 +5,7 @@ import "common.js" as Common
 import "./view"
 
 Rectangle {
-    property alias url: sm.url
+    property alias myurl: sm.url
     property alias type: sm.type
     property alias interval: sm.interval
     property int sensorIndex: 0
@@ -190,41 +190,47 @@ Rectangle {
         return msg
     }
 
-    function getTestData() {
-        appendLog("start getTestData id = " + sm.serverJobId)
+    function getTestData(jobid) {
+        if (retryTimes > 5) {
+            appendLog("重试过多退出 : jobid = " + jobid)
+            retryTimes = 0
+            finish()
+            return
+        }
+        appendLog("start getTestData id = " + jobid)
         sm.send(Common.METHOD_DB_QUERY, {
                     "table": Common.TABLE_EXHALE_TEST,
-                    "where_clause": " id =" + sm.serverJobId,
+                    "where_clause": " id =" + jobid,
                     "history": true
                 }, function (obj) {
                     if (obj.ok) {
-                        if (typeof (obj.ok.data) === "object" && obj.ok.data.cal
+                        if (typeof (obj.ok.data) === "object" && obj.ok.data
                                 && obj.ok.data.pid) {
                             var serverData = obj.ok.data
+                            retryTimes = 0
                             try {
-                                resultPbb = getHistoryResult(serverData.cal.sno.history[0])
+                                resultPbb = getHistoryResult(
+                                            serverData.cal.sno.history[0])
                             } catch (e) {
-                                console.log("get_test_data error..." + e)
+                                appendLog("get_test_data error..." + e)
                             }
                         } else {
-                            console.log("获取成功, 但格式异常, 重试!")
-                            getTestData()
+                            appendLog("结果未生成, 重试! jobid = " + jobid)
+                            setTimeout(function () {
+                                getTestData(jobid)
+                            }, 1500)
+                            retryTimes += 1
+
                             return
                         }
                         finish()
                     } else {
-                        console.log("serverJobId = " + sm.serverJobId
-                                    + " 同步测试数据失败 obj = " + JSON.stringify(
-                                        obj.ok))
+                        appendLog("serverJobId = " + jobid + " 同步测试数据失败 obj = " + JSON.stringify(
+                                      obj.ok))
                         retryTimes += 1
-                        if (retryTimes < 5) {
-                            setTimeout(function () {
-                                getTestData()
-                            }, 500)
-                        } else {
-                            console.log("同步测试数据超时")
-                            finish()
-                        }
+                        setTimeout(function () {
+                            getTestData(jobid)
+                        }, 500)
                     }
                 })
     }
@@ -245,7 +251,8 @@ Rectangle {
                              finishTimes = 1
                              if (sm.currentStatus === Common.STATUS_END_FINISH) {
                                  setTimeout(function () {
-                                     getTestData()
+                                     var id = sm.serverJobId
+                                     getTestData(id)
                                  }, 300)
                              } else {
                                  reset_data()
@@ -325,7 +332,7 @@ Rectangle {
             preIndex = appSettings.job_id
 
             appendLog("start sensorIndex = " + sensorIndex + " preIndex = "
-                        + preIndex + " job_id = " + appSettings.job_id)
+                      + preIndex + " job_id = " + appSettings.job_id)
         }
     }
 
@@ -372,7 +379,7 @@ Rectangle {
             anchors.topMargin: 6
             color: 'red'
             id: connectTxt
-            text: url
+            text: myurl
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.top: parent.top
         }
@@ -496,7 +503,8 @@ Rectangle {
                 finishTimes += 1
                 if (sm.arr_umd1.length > 100 && finishTimes === 5
                         && resultPbb.length === 0) {
-                    getTestData()
+                    var id = sm.serverJobId
+                    getTestData(id)
                 }
                 if (finishTimes > 10) {
                     console.log("完成等待超时...")
@@ -568,12 +576,11 @@ Rectangle {
         function onMessageReceived(msg) {
             if (msg === Common.MESSAGE_REFRESH_CONFIG) {
                 var new_url = Common.fix_url(sensorsModel[sensorIndex].addr)
-                if (new_url !== (url + "")) {
+                if (new_url !== (myurl + "")) {
                     sm.close()
-                    url = new_url
+                    myurl = new_url
                     sm.sampleData = undefined
-                    // lines_umd1.clear()
-                    chart.clear()
+                    // chart.clear()
                 }
                 refreshStatus()
             }
