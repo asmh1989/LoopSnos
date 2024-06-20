@@ -205,18 +205,22 @@ ApplicationWindow {
 
     function openVal() {
 
-        if (debug) {
-            return
-        }
-
-        if (webSocket.status === EmSocket.Open) {
+        // if (debug) {
+        //     return
+        // }
+        if (webSocket.is_open) {
             eventBus.sendMessage(Common.MESSAGE_ADD_LOG,
                                  "打开阀门 = " + (appSettings.val_index + 1))
-            webSocket.sendTextMessage(JSON.stringify({
-                                                         "method": "valve",
-                                                         "args": [appSettings.val_index + 1]
-                                                     }))
-            setTimeout(() => refreshVal(), 200)
+
+            var s = Common.setBit(0, appSettings.val_index, 1)
+
+            webSocket.send("update_das_params", {
+                        "sn1_h": s
+                    })
+
+            setTimeout(function(){
+                refreshVal()
+            }, 500)
         } else {
             webSocket.open()
             eventBus.sendMessage(Common.MESSAGE_ADD_LOG, "阀门服务连接失败")
@@ -224,10 +228,8 @@ ApplicationWindow {
     }
 
     function refreshVal() {
-        if (webSocket.status === EmSocket.Open) {
-            webSocket.sendTextMessage(JSON.stringify({
-                                                         "method": "state"
-                                                     }))
+        if (webSocket.is_open) {
+            webSocket.refresh()
         } else {
             webSocket.open()
         }
@@ -249,35 +251,10 @@ ApplicationWindow {
         return result
     }
 
-    EmSocket {
+    EmSocketManager {
         id: webSocket
         url: appSettings.val_url
         type: EmSocket.WebSocket
-        onTextMessageReceived: function (message) {
-            console.log("阀门服务端 recv = " + message)
-
-            var obj = JSON.parse(message)
-            if (obj.temperature) {
-                temperature = parseFloat(obj.temperature.toFixed(1))
-            }
-            if (obj.humidity) {
-                humidity = obj.humidity
-            }
-        }
-        onStatusChanged: {
-            if (webSocket.status === EmSocket.Error) {
-                console.log("阀门服务端 error = " + webSocket.errorString)
-            } else if (webSocket.status === EmSocket.Open) {
-                console.log("阀门服务端 Connected ")
-                refreshVal()
-            } else if (webSocket.status === EmSocket.Closed) {
-                console.log("阀门服务端 Closed ")
-            } else if (webSocket.status === EmSocket.Connecting) {
-                console.log("阀门服务端 Connecting ")
-            }
-        }
-
-        active: true
     }
 
     function calValue(arr, td, sensor_standard) {
@@ -306,10 +283,10 @@ ApplicationWindow {
     function postWechat() {
 
         console.log("开始推送错误状态!")
+
         if (debug) {
             return
         }
-
         var data = JSON.stringify({
                                       "token": "547880c025c14118a4fc89ddb51b88d3",
                                       "title": "离线循环测试报错了",
@@ -364,5 +341,16 @@ ApplicationWindow {
         property int indoor_humi: 48
 
         property string val_url: "ws://192.168.2.89:5533"
+    }
+
+    Connections {
+        target: webSocket
+
+        function onSampleDataChanged() {
+            var obj = webSocket.sampleData
+            temperature = (obj[Common.AMBIENT_TEMP] / 100.0).toFixed(1)
+            humidity = obj[Common.AMBIENT_HUMI]
+            console.log("temperature = " + temperature + " humidity = " + humidity)
+        }
     }
 }

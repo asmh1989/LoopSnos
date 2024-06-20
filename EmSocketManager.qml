@@ -57,14 +57,15 @@ Item {
         id: socket
         type: EmSocket.WebSocket
         onTextMessageReceived: function (message) {
-            if (stackView.currentItem
-                    && stackView.currentItem.title !== title) {
-                return
-            }
+            // if (stackView.currentItem
+            //         && stackView.currentItem.title !== title) {
+            //     return
+            // }
 
             //            console.log("耗时: " + (new Date().getTime(
             //                                      ) - send_time) + " " + message)
             var obj = JSON.parse(message)
+
 
             // 回调
             if (obj.id) {
@@ -104,7 +105,9 @@ Item {
                             && sampleData["update_time"] !== obj.ok["update_time"]) {
                         update_count += 1
                     }
+
                     sampleData = obj.ok
+
 
                     currentStatus = sampleData[Common.FUNC_STATUS]
 
@@ -175,7 +178,7 @@ Item {
                     getUmdParams()
                     refresh()
                 }
-                stop_helxa_test()
+                // stop_helxa_test()
             } else if (socket.status == EmSocket.Closed) {
                 appendLog("closed")
                 connectReceived("Socket closed")
@@ -256,7 +259,7 @@ Item {
     }
 
     function appendLog(msg) {
-        // console.log(socket.url + " => " + msg)
+        console.log(socket.url + " => " + msg)
         eventBus.sendMessage(Common.MESSAGE_ADD_LOG, socket.url + "=>" + msg)
     }
 

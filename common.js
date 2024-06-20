@@ -463,3 +463,24 @@ function validateJson(jsonString) {
     // 所有验证通过
     return parsedArray
 }
+
+
+// 将指定位设置为 0 或 1
+function setBit(number, position, value) {
+    if (value !== 0 && value !== 1) {
+        console.error("The value must be 0 or 1.")
+        return number
+    }
+
+    // 创建掩码，将目标位设置为 1，其他位设置为 0
+    const mask = 1 << position
+
+    // 将目标位设置为目标值
+    if (value === 0) {
+        // 将目标位设置为 0
+        return number & ~mask
+    } else {
+        // 将目标位设置为 1
+        return number | mask
+    }
+}
