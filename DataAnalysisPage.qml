@@ -90,7 +90,7 @@ Page {
                         }
 
                         onTextChanged: {
-                            // console.log("ids = " + Common.generateArrayFromString(
+                            // mlog("ids = " + Common.generateArrayFromString(
                             //                 text))
                         }
                     }
@@ -393,12 +393,12 @@ Page {
                 var ddd = dd.map(v => parseInt(v.job_id))
                 var ids = "\"" + Common.convertToRangeString(ddd) + "\""
 
-                // console.log("ids = " + ids + " " + JSON.stringify(ddd))
+                // mlog("ids = " + ids + " " + JSON.stringify(ddd))
                 var new_result = [d.instrument_name, d.airLine_name, d.detector_name, d.gas_conc, ids, tfAvg.text, tfAE.text, tfRe.text, tfSD.text, tfCV.text]
 
                 var res = file.saveToCsv(getResultPrefix() + "/analysis.csv",
                                          result_header, [new_result])
-                console.log("save = " + res)
+                mlog("save = " + res)
             }
         }
     }
@@ -418,7 +418,7 @@ Page {
             //                        (v, index) => r4Arr[index].checked).map(
             //                        v => v.gas_conc))
             var gas = parseFloat(gasTf.text)
-            console.log("gas = " + gas)
+            mlog("gas = " + gas)
             var m = Common.mean(c)
             var sd = Common.stdev(c)
             tfAvg.text = m.toFixed(1)

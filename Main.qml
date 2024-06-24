@@ -76,7 +76,7 @@ ApplicationWindow {
     function saveJsonFile(source, data, no) {
         file.source = source
         file.write(JSON.stringify(data))
-        console.log("save = " + JSON.stringify(data))
+        mlog("save = " + JSON.stringify(data))
         if (!no) {
             showToast("保存成功： " + source)
         }
@@ -142,8 +142,15 @@ ApplicationWindow {
     }
 
     function clearTimeout(timerObj) {
-        timerObj.stop()
-        timerObj.destroy()
+        try {
+            if (timerObj) {
+                timerObj.stop()
+                timerObj.destroy()
+            }
+        } catch (e) {
+            console.log("delayTimeout destory error = " + e)
+        }
+
     }
 
     Component.onCompleted: {
@@ -282,7 +289,7 @@ ApplicationWindow {
 
     function postWechat() {
 
-        console.log("开始推送错误状态!")
+        mlog("开始推送错误状态!")
 
         if (debug) {
             return
@@ -299,9 +306,9 @@ ApplicationWindow {
         xhr.onreadystatechange = function () {
             if (xhr.readyState === XMLHttpRequest.DONE) {
                 if (xhr.status === 200) {
-                    console.log("推送成功")
+                    mlog("推送成功")
                 } else {
-                    console.log("推送失败 + " + xhr.status)
+                    mlog("推送失败 + " + xhr.status)
                 }
             }
         }
@@ -343,6 +350,14 @@ ApplicationWindow {
         property string val_url: "ws://192.168.2.89:5533"
     }
 
+    function mlog(msg) {
+        if(debug){
+            console.log(new Date().toISOString() + " => "+ msg)
+        } else {
+            console.log(msg)
+        }
+    }
+
     Connections {
         target: webSocket
 
@@ -350,7 +365,7 @@ ApplicationWindow {
             var obj = webSocket.sampleData
             temperature = (obj[Common.AMBIENT_TEMP] / 100.0).toFixed(1)
             humidity = obj[Common.AMBIENT_HUMI]
-            console.log("temperature = " + temperature + " humidity = " + humidity)
+            // mlog("temperature = " + temperature + " humidity = " + humidity)
         }
     }
 }

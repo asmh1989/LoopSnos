@@ -97,7 +97,7 @@ Page {
                         }
 
                         onTextChanged: {
-                            // console.log("ids = " + Common.generateArrayFromString(
+                            // mlog("ids = " + Common.generateArrayFromString(
                             //                 text))
                         }
                     }

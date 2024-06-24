@@ -62,7 +62,7 @@ Item {
             //     return
             // }
 
-            //            console.log("耗时: " + (new Date().getTime(
+            //            mlog("耗时: " + (new Date().getTime(
             //                                      ) - send_time) + " " + message)
             var obj = JSON.parse(message)
 
@@ -154,7 +154,7 @@ Item {
                     umdParams = obj.ok
                 }
             } else {
-                console.log("error msg =  " + message)
+                mlog("error msg =  " + message)
             }
         }
 
@@ -239,9 +239,9 @@ Item {
             }
             helxa_reset()
             inHelxa = true
-            console.log("start_helxa_test ...")
+            mlog("start_helxa_test ...")
         } else {
-            console.log("已在呼吸测试中, 请稍后")
+            mlog("已在呼吸测试中, 请稍后")
         }
     }
 
@@ -259,7 +259,7 @@ Item {
     }
 
     function appendLog(msg) {
-        console.log(socket.url + " => " + msg)
+        // mlog(socket.url + " => " + msg)
         eventBus.sendMessage(Common.MESSAGE_ADD_LOG, socket.url + "=>" + msg)
     }
 

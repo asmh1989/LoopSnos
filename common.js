@@ -223,7 +223,7 @@ function get_status_info(value) {
     } else if (value === STATUS_END_FINISH) {
         return "测试完成"
     } else {
-        //        console.log("status = "+ value)
+        //        mlog("status = "+ value)
         return "手动停止"
     }
 }
@@ -425,7 +425,7 @@ function validateJson(jsonString) {
 
     // 检查是否为非空数组
     if (!Array.isArray(parsedArray) || parsedArray.length === 0) {
-        console.log("顶层不是数组或为空")
+        mlog("顶层不是数组或为空")
         return []
     }
 
@@ -433,12 +433,12 @@ function validateJson(jsonString) {
     for (const item of parsedArray) {
         if (typeof item !== 'object' || item === null || !Array.isArray(
                     item.data) || item.data.length === 0) {
-            console.log("item.data 不是数组")
+            mlog("item.data 不是数组")
             return []
         }
 
         if (typeof item.loop !== 'number') {
-            console.log("item.loop 不是数字")
+            mlog("item.loop 不是数字")
             return []
         }
 
@@ -454,7 +454,7 @@ function validateJson(jsonString) {
                     || typeof dataItem.count !== 'number'
                     || typeof dataItem.delay !== 'number'
                     || typeof dataItem.waiting !== 'number') {
-                console.log("dataItem 类型错误 = " + JSON.stringify(dataItem))
+                mlog("dataItem 类型错误 = " + JSON.stringify(dataItem))
                 return []
             }
         }

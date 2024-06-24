@@ -288,7 +288,7 @@ Page {
             sensorsModel[btnIndex].sensor_standard = umd_standard.toFixed(
                         4) + ""
             listView.model = sensorsModel
-            // console.log("umd_standard = " + umd_standard)
+            // mlog("umd_standard = " + umd_standard)
         }
 
         function onUmdParamsChanged() {
@@ -298,7 +298,7 @@ Page {
             sensorsModel[btnIndex].detector_no = sn_umd
             listView.model = sensorsModel
 
-            // console.log("sn_sensors = " + sn_sensors + " sn_umd = " + sn_umd)
+            // mlog("sn_sensors = " + sn_sensors + " sn_umd = " + sn_umd)
         }
     }
 }

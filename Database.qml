@@ -21,7 +21,7 @@ QtObject {
             })
             _db = db
         } catch (error) {
-            console.log("Error opening database: " + error)
+            mlog("Error opening database: " + error)
         }
 
         return _db
@@ -70,7 +70,7 @@ QtObject {
         }
 
         if (where.length > 0) {
-            console.log("sql where = " + where)
+            mlog("sql where = " + where)
         } else {
             return []
         }

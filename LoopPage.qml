@@ -77,7 +77,7 @@ Page {
     }
 
     function realStart() {
-        console.log("realStart ..")
+        mlog("realStart ..")
         eventBus.sendMessage(
                     Common.MESSAGE_ADD_LOG,
                     "高级离线循环测试 curIndex = " + curIndex + " curFmIndex = " + curFmIndex)
@@ -147,8 +147,8 @@ Page {
             var path = (fileDialog.currentFile + "").replace("file:///", "")
             file.source = path
             var content = file.read()
-            console.log("path = " + path)
-            console.log("read content = " + content)
+            mlog("path = " + path)
+            mlog("read content = " + content)
             var arr = Common.validateJson(content)
             if (arr.length === 0) {
                 showToast("解析失败, 请检查文件内容: " + path)
@@ -204,7 +204,7 @@ Page {
 
                         onTextChanged: {
 
-                            // console.log("ids = " + Common.generateArrayFromString(
+                            // mlog("ids = " + Common.generateArrayFromString(
                             //                 text))
                         }
                     }
@@ -650,7 +650,7 @@ Page {
                     bus.sendMessage("Restart")
                 }
             } else if (changeTime > 80 && changeTime % 10 === 0) {
-                console.log("长时间没反应, 主动检查完成情况, curIndex = " + curIndex
+                mlog("长时间没反应, 主动检查完成情况, curIndex = " + curIndex
                             + " curFmIndex = " + curFmIndex + " changeTime = "
                             + changeTime + " waiting = " + waiting)
                 loopFinishCheck()
@@ -663,7 +663,7 @@ Page {
     }
 
     function appendLog(msg) {
-        console.log(msg)
+        mlog(msg)
         if (msg.length === 0) {
             area.text = ""
         } else {
@@ -677,7 +677,7 @@ Page {
 
     function loopFinishCheck() {
         if (!running) {
-            console.log("loopFinishCheck already stop")
+            mlog("loopFinishCheck already stop")
             return
         }
 

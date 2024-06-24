@@ -11,7 +11,7 @@
 #include "qmlemsocket.h"
 #include "syssettings.h"
 
-const qint64 LOG_FILE_LIMIT = 30000000;
+const qint64 LOG_FILE_LIMIT = 10000000;
 const QString LOG_PATH = "log/";
 
 // thread safety

@@ -27,6 +27,8 @@ Rectangle {
     property int retryTimes: 0
     property int finishTimes: 0
 
+    property var delayTimeout
+
     function appendLog(msg) {
         eventBus.sendMessage(Common.MESSAGE_ADD_LOG, msg)
     }
@@ -64,7 +66,7 @@ Rectangle {
 
             reset_data()
         } else {
-            console.log("忽略, status = " + sm.currentStatus)
+            mlog("忽略, status = " + sm.currentStatus)
         }
     }
 
@@ -157,7 +159,7 @@ Rectangle {
             if (isQc) {
                 var qualityExpectedValue = getGasConc()
                 var n = msg * sensor.sensor_standard / qualityExpectedValue
-                console.log("n = " + n)
+                mlog("n = " + n)
                 if (n > 2.0 && n < 6.0) {
                     sensor.sensor_standard = n.toFixed(4) + ""
                     saveJsonFile(Common.SENSORS_CONFIG_PATH, sensorsModel)
@@ -286,7 +288,7 @@ Rectangle {
         interval: 1000
         onTriggered: () => {
                          if (!Common.is_helxa_finish(sm.currentStatus)) {
-                             //                             console.log("refresh_timer refresh")
+                             //                             mlog("refresh_timer refresh")
                              sm.refresh()
                          } else {
                              refresh_timer.stop()
@@ -394,7 +396,7 @@ Rectangle {
             preTestDate = new Date()
             sm.start_helxa_test("Sno", function (obj) {
                 if (obj.error) {
-                    console.log("Sno 启动失败， 重启Sno = " + obj.error)
+                    mlog("Sno 启动失败， 重启Sno = " + obj.error)
                     setTimeout(function () {
                         startSno()
                     }, 1000)
@@ -450,7 +452,7 @@ Rectangle {
     }
     function stopLoopTest() {
         timer.stop()
-        timer2.stop()
+        clearTimeout(delayTimeout)
         chart_timer.stop()
         reset_data()
         times = 0
@@ -473,7 +475,7 @@ Rectangle {
                         if (obj.ok) {
                             eventBus.sendMessage(Common.MESSAFE_SLOOP_FINISH)
                         } else {
-                            console.log("stop_helxa_test failed = " + obj.error)
+                            mlog("stop_helxa_test failed = " + obj.error)
                             finishCheck()
                         }
                     })
@@ -507,7 +509,7 @@ Rectangle {
                     getTestData(id)
                 }
                 if (finishTimes > 10) {
-                    console.log("完成等待超时...")
+                    mlog("完成等待超时...")
                     finishTimes = 0
                     finish()
                     return
@@ -525,24 +527,18 @@ Rectangle {
                         finishCheck()
                     } else {
                         // 还有次数开启延时间隔执行
-                        timer2.interval = Math.max(
-                                    appSettings.offline_interval, 1) * 1000
-                        sm.appendLog("延时离线循环定时器启动 .. " + timer2.interval)
-                        timer2.start()
+                        clearTimeout(delayTimeout)
+
+                        var interval = Math.max(appSettings.offline_interval,
+                                                1) * 1000
+                        sm.appendLog("延时离线循环定时器启动 .. " + interval)
+                        delayTimeout = setTimeout(function () {
+                            _start_test()
+                            timer.start()
+                        }, interval)
                     }
                 }
             }
-        }
-    }
-
-    Timer {
-        id: timer2
-        triggeredOnStart: false
-        repeat: false
-        interval: 1000
-        onTriggered: {
-            _start_test()
-            timer.start()
         }
     }
 
@@ -552,7 +548,7 @@ Rectangle {
             if (sm.exhaleStarting) {
                 start()
             } else {
-                console.log("sm.exhaleStarting = " + sm.exhaleStarting)
+                mlog("sm.exhaleStarting = " + sm.exhaleStarting)
                 // finish()
             }
         }
