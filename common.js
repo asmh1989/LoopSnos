@@ -105,6 +105,8 @@ const MESSAGE_ADD_LOG = "__msg_add_log"
 const MESSAGE_FINISH_ONE = "__msg_finish_one"
 const MESSAFE_SLOOP_FINISH = "__msg_small_loop_finish"
 
+const MESSAGE_ONE_SECOND_TIMER = "__msg_one_second"
+
 const JSON_SENSOR = {
     "addr": "",
     "airLine_name": "",

@@ -250,7 +250,7 @@ Item {
         appendLog("send: " + JSON.stringify(msg))
         sendJson(msg, fn)
         helxa_reset()
-        refresh_timer.start()
+        // refresh_timer.start()
     }
 
     function refresh(fn) {

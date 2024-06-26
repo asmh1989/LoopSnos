@@ -8,6 +8,7 @@
 
 #include "TextFieldDoubleValidator.h"
 #include "fileio.h"
+#include "highprecisiontimer.h"
 #include "qmlemsocket.h"
 #include "syssettings.h"
 
@@ -20,7 +21,7 @@ QMutex mutex;
 void redirectDebugMessages(QtMsgType type, const QMessageLogContext &context,
                            const QString &str) {
   QString datetime =
-      QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss");
+      QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss.zzz");
   QString txt;
   // prepend a log level label to every message
   switch (type) {
@@ -92,6 +93,9 @@ int main(int argc, char *argv[]) {
   //  QQuickStyle::setStyle("Universal");
 
   qmlRegisterType<FileIO, 1>("FileIO", 1, 0, "FileIO");
+  qmlRegisterType<HighPrecisionTimer>("HighPrecisionTimer", 1, 0,
+                                      "HighPrecisionTimer");
+
   qmlRegisterType<SysSettings, 1>("SysSettings", 1, 0, "SysSettings");
   qmlRegisterType<QmlEmSocket>("EmSockets", 1 /*major*/, 0 /*minor*/,
                                "EmSocket");

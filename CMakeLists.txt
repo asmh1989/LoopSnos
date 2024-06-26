@@ -48,6 +48,8 @@ qt_add_qml_module(appLoopSnos
     CurveAnalysisPage.qml
     view/AutoYChartView.qml
     LoopPage.qml
+    SOURCES src/highprecisiontimer.h
+    SOURCES src/highprecisiontimer.h src/highprecisiontimer.cpp
 )
 
 # configure_file(${CMAKE_SOURCE_DIR}/config/sensors.json ${CMAKE_BINARY_DIR}/config/sensors.json COPYONLY)

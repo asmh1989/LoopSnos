@@ -29,6 +29,8 @@ Rectangle {
 
     property var delayTimeout
 
+    property bool timerStarted: false
+
     function appendLog(msg) {
         eventBus.sendMessage(Common.MESSAGE_ADD_LOG, msg)
     }
@@ -282,20 +284,19 @@ Rectangle {
                      }
     }
 
-    Timer {
-        id: refresh_timer
-        repeat: true
-        interval: 1000
-        onTriggered: () => {
-                         if (!Common.is_helxa_finish(sm.currentStatus)) {
-                             //                             mlog("refresh_timer refresh")
-                             sm.refresh()
-                         } else {
-                             refresh_timer.stop()
-                         }
-                     }
-    }
-
+    // Timer {
+    //     id: refresh_timer
+    //     repeat: true
+    //     interval: 1000
+    //     onTriggered: () => {
+    //                      if (!Common.is_helxa_finish(sm.currentStatus)) {
+    //                          //                             mlog("refresh_timer refresh")
+    //                          sm.refresh()
+    //                      } else {
+    //                          refresh_timer.stop()
+    //                      }
+    //                  }
+    // }
     function addFlowRt(obj) {
         var flow_rt = obj[Common.FLOW_RT] / 10.0
 
@@ -435,9 +436,9 @@ Rectangle {
     function startLoopTest() {
         isQc = false
         if (sm.is_open) {
-            if (!timer.running) {
+            if (!timerStarted) {
                 times = 0
-                timer.start()
+                timerStarted = true
             } else {
                 sm.appendLog("已在进行离线循环测试中!")
             }
@@ -451,7 +452,7 @@ Rectangle {
         }
     }
     function stopLoopTest() {
-        timer.stop()
+        timerStarted = false
         clearTimeout(delayTimeout)
         chart_timer.stop()
         reset_data()
@@ -486,62 +487,63 @@ Rectangle {
         })
     }
 
-    Timer {
-        id: timer
-        triggeredOnStart: true
-        interval: 1000
-        repeat: true
-        onTriggered: {
-            if (!sm.is_open) {
+    // Timer {
+    //     id: timer
+    //     triggeredOnStart: true
+    //     interval: 1000
+    //     repeat: true
+    //     onTriggered: {
+    function oneSecondCheck() {
+        if (!sm.is_open) {
+            return
+        }
+
+        if (times === 0) {
+            // 开始第一次
+            _start_test()
+            return
+        }
+        if (finishTimes > 0) {
+            finishTimes += 1
+            if (sm.arr_umd1.length > 100 && finishTimes === 5
+                    && resultPbb.length === 0) {
+                var id = sm.serverJobId
+                getTestData(id)
+            }
+            if (finishTimes > 10) {
+                mlog("完成等待超时...")
+                finishTimes = 0
+                finish()
                 return
             }
+        }
 
-            if (times === 0) {
-                // 开始第一次
-                _start_test()
-                return
-            }
-            if (finishTimes > 0) {
-                finishTimes += 1
-                if (sm.arr_umd1.length > 100 && finishTimes === 5
-                        && resultPbb.length === 0) {
-                    var id = sm.serverJobId
-                    getTestData(id)
-                }
-                if (finishTimes > 10) {
-                    mlog("完成等待超时...")
-                    finishTimes = 0
-                    finish()
-                    return
-                }
-            }
+        if (times < appSettings.offline_times + 1) {
+            if (!sm.inHelxa && preIndex !== appSettings.job_id) {
+                // 结束后
+                timerStarted = false
+                if (times === appSettings.offline_times) {
+                    // 次数用完, 结束任务
+                    sm.appendLog(appSettings.offline_times + "次循环离线测试完成!")
+                    stopLoopTest()
+                    finishCheck()
+                } else {
+                    // 还有次数开启延时间隔执行
+                    clearTimeout(delayTimeout)
 
-            if (times < appSettings.offline_times + 1) {
-                if (!sm.inHelxa && preIndex !== appSettings.job_id) {
-                    // 结束后
-                    timer.stop()
-                    if (times === appSettings.offline_times) {
-                        // 次数用完, 结束任务
-                        sm.appendLog(appSettings.offline_times + "次循环离线测试完成!")
-                        stopLoopTest()
-                        finishCheck()
-                    } else {
-                        // 还有次数开启延时间隔执行
-                        clearTimeout(delayTimeout)
-
-                        var interval = Math.max(appSettings.offline_interval,
-                                                1) * 1000
-                        sm.appendLog("延时离线循环定时器启动 .. " + interval)
-                        delayTimeout = setTimeout(function () {
-                            _start_test()
-                            timer.start()
-                        }, interval)
-                    }
+                    var interval = Math.max(appSettings.offline_interval,
+                                            1) * 1000
+                    sm.appendLog("延时离线循环定时器启动 .. " + interval)
+                    delayTimeout = setTimeout(function () {
+                        _start_test()
+                        timerStarted = true
+                    }, interval)
                 }
             }
         }
     }
 
+    // }
     Connections {
         target: sm
         function onExhaleStartingChanged() {
@@ -579,6 +581,10 @@ Rectangle {
                     // chart.clear()
                 }
                 refreshStatus()
+            } else if (msg === Common.MESSAGE_ONE_SECOND_TIMER) {
+                if (timerStarted) {
+                    oneSecondCheck()
+                }
             }
         }
     }

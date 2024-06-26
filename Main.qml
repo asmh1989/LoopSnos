@@ -8,6 +8,7 @@ import Qt.labs.settings 1.0
 import QtQuick.Controls.Material
 import FileIO
 import EmSockets
+import HighPrecisionTimer
 
 ApplicationWindow {
     id: window
@@ -184,6 +185,8 @@ ApplicationWindow {
         var month = String(now.getMonth() + 1).padStart(2, '0')
         var day = String(now.getDate()).padStart(2, '0')
         _time_name = year + month + day
+
+        oneSecondTimer.start(1000)
     }
 
     Component.onDestruction: {
@@ -212,9 +215,9 @@ ApplicationWindow {
 
     function openVal() {
 
-        // if (debug) {
-        //     return
-        // }
+        if (debug) {
+            return
+        }
         if (webSocket.is_open) {
             eventBus.sendMessage(Common.MESSAGE_ADD_LOG,
                                  "打开阀门 = " + (appSettings.val_index + 1))
@@ -355,6 +358,13 @@ ApplicationWindow {
             console.log(new Date().toISOString() + " => "+ msg)
         } else {
             console.log(msg)
+        }
+    }
+
+    HighPrecisionTimer {
+        id: oneSecondTimer
+        onTimeout: {
+            eventBus.sendMessage(Common.MESSAGE_ONE_SECOND_TIMER)
         }
     }
 
