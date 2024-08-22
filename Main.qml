@@ -30,6 +30,9 @@ ApplicationWindow {
     property var airBagsModel: []
     property var loopModel: []
 
+    property var cacheData: []
+
+
     property bool isQc: false
     property string _time_name: ""
 

@@ -12,7 +12,6 @@ Rectangle {
     property real umd1_x: 0
 
     /// 用于画chart
-    property int _start_time: 0
     property real flow_x: 0
 
     property bool easyUI: false
@@ -46,14 +45,16 @@ Rectangle {
                 appSettings.job_id += 1
             }
 
-            _start_time = 0
-
             if (sm.currentStatus === Common.STATUS_END_FINISH
                     && sm.arr_umd1.length > 100) {
+
                 try {
                     appendLog("finish sensorIndex = " + sensorIndex + " preIndex = "
                               + preIndex + " job_id = " + appSettings.job_id)
-                    eventBus.sendMessage(Common.MESSAGE_FINISH_ONE, sensorIndex)
+                    if (cacheData[sensorIndex] > 0) {
+                        cacheData[sensorIndex] -= 1
+                    }
+                    // eventBus.sendMessage(Common.MESSAGE_FINISH_ONE, sensorIndex)
                     save()
                 } catch (e) {
                     appendLog("数据库存储失败")
@@ -64,7 +65,7 @@ Rectangle {
                 times -= 1
             }
 
-            reset_data()
+            // reset_data()
         } else {
             mlog("忽略, status = " + sm.currentStatus)
         }
@@ -79,6 +80,7 @@ Rectangle {
     function reset_data() {
         flow_x = 0
         umd1_x = 0
+        finishTimes = 0
         sm.arr_flow_rt.splice(0, sm.arr_flow_rt.length)
         sm.arr_umd1.splice(0, sm.arr_umd1.length)
         sm.arr_baseline.splice(0, sm.arr_baseline.length)
@@ -248,7 +250,7 @@ Rectangle {
                                  sm.currentStatus)) {
                              sm.needSaveCache = false
                              sm.appendLog("测试结束 : " + Common.get_status_info(
-                                              sm.currentStatus))
+                                           sm.currentStatus))
                              chart_timer.stop()
                              finishTimes = 1
                              if (sm.currentStatus === Common.STATUS_END_FINISH) {
@@ -257,7 +259,8 @@ Rectangle {
                                      getTestData(id)
                                  }, 300)
                              } else {
-                                 reset_data()
+
+                                 // reset_data()
                              }
 
                              return
@@ -266,14 +269,6 @@ Rectangle {
                          // 连接异常后, 主动关闭轮询
                          if (!sm.is_open) {
                              restart()
-                             return
-                         }
-
-                         if (_start_time === 0) {
-                             var update_time = new Date(obj[Common.UPDATE_TIME]).getTime()
-                             _start_time = update_time
-                             reset_data()
-                             finishTimes = 0
                              return
                          }
 
@@ -462,6 +457,7 @@ Rectangle {
     }
     function _start_test() {
         times += 1
+        reset_data()
         var msg = "开始循环离线测试 times = " + times
         sm.appendLog(msg)
         startSno()

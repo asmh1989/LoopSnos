@@ -52,8 +52,6 @@ Page {
 
     property bool running: false
 
-    property var cacheData: []
-
     property var urls: []
 
     property int waiting: 0
@@ -99,9 +97,14 @@ Page {
     function stop() {
         waiting = 0
         running = false
-        cacheData = []
-        curIndex = 0
-        curFmIndex = 0
+        if (curIndex + 1 === loopModel.length) {
+            cacheData = ["完成"]
+        } else {
+            cacheData = ["终止"]
+        }
+
+        // curIndex = 0
+        // curFmIndex = 0
         bus.sendMessage("StopLoopTest")
         timer.stop()
         eventBus.sendMessage(Common.MESSAGE_ADD_LOG, "高级离线循环测试完成")
@@ -650,9 +653,10 @@ Page {
                     bus.sendMessage("Restart")
                 }
             } else if (changeTime > 80 && changeTime % 10 === 0) {
-                mlog("长时间没反应, 主动检查完成情况, curIndex = " + curIndex
-                            + " curFmIndex = " + curFmIndex + " changeTime = "
-                            + changeTime + " waiting = " + waiting)
+                mlog("长时间没反应, 主动检查完成情况, curIndex = " + curIndex + " curFmIndex = "
+                     + curFmIndex + " changeTime = " + changeTime + " waiting = "
+                     + waiting + " cacheData = " + JSON.stringify(cacheData))
+                cacheData = [0]
                 loopFinishCheck()
             }
 
@@ -682,6 +686,7 @@ Page {
         }
 
         var has = cacheData.filter(v => v !== 0)
+        console.log("cacheData = " + JSON.stringify(cacheData))
         if (has.length === 0) {
             var m = loopModel[curIndex]
             var dd = Common.generateArrayFromString(m.fm)
@@ -719,9 +724,10 @@ Page {
             if (msg === Common.MESSAGE_ADD_LOG) {
                 appendLog(data)
             } else if (msg === Common.MESSAGE_FINISH_ONE) {
-                if (cacheData[data] > 0) {
-                    cacheData[data] -= 1
-                }
+
+                // if (cacheData[data] > 0) {
+                //     cacheData[data] -= 1
+                // }
             } else if (msg === Common.MESSAGE_SOCKET_CONNECT) {
                 if (!data.connected) {
                     cacheData[data.index] = 0
